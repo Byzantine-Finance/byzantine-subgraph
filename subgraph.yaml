@@ -8,25 +8,28 @@ dataSources:
     name: Auction
     network: holesky
     source:
-      address: "0xF7908Db29CD4dD23a9c69340b8B645734F701935"
+      address: "0x1ae6F573F0D7b4b966Ce103BC18F3A3b9E43987b"
       abi: Auction
-      startBlock: 1774065
+      startBlock: 1769909
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - AdminChanged
-        - BeaconUpgraded
-        - Upgraded
+        - BidPlaced
+        - BidUpdated
+        - BidWithdrawn
+        - WinnerJoinedDV
       abis:
         - name: Auction
           file: ./abis/Auction.json
       eventHandlers:
-        - event: AdminChanged(address,address)
-          handler: handleAdminChanged
-        - event: BeaconUpgraded(indexed address)
-          handler: handleBeaconUpgraded
-        - event: Upgraded(indexed address)
-          handler: handleUpgraded
+        - event: BidPlaced(indexed address,uint256,uint256,uint256,uint256,uint256)
+          handler: handleBidPlaced
+        - event: BidUpdated(indexed address,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleBidUpdated
+        - event: BidWithdrawn(indexed address,uint256)
+          handler: handleBidWithdrawn
+        - event: WinnerJoinedDV(indexed address,uint256)
+          handler: handleWinnerJoinedDV
       file: ./src/auction.ts

@@ -1,30 +1,68 @@
 [
   {
     "inputs": [
-      { "internalType": "address", "name": "_logic", "type": "address" },
-      { "internalType": "address", "name": "admin_", "type": "address" },
-      { "internalType": "bytes", "name": "_data", "type": "bytes" }
+      {
+        "internalType": "contract IEscrow",
+        "name": "_escrow",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IStrategyModuleManager",
+        "name": "_strategyModuleManager",
+        "type": "address"
+      }
     ],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "constructor"
   },
+  { "inputs": [], "name": "AlreadyWhitelisted", "type": "error" },
+  { "inputs": [], "name": "DiscountRateTooHigh", "type": "error" },
+  { "inputs": [], "name": "DurationTooShort", "type": "error" },
+  { "inputs": [], "name": "EscrowTransferFailed", "type": "error" },
+  { "inputs": [], "name": "NotEnoughEtherSent", "type": "error" },
+  { "inputs": [], "name": "NotWhitelisted", "type": "error" },
+  { "inputs": [], "name": "OnlyStrategyModuleManager", "type": "error" },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "address",
-        "name": "previousAdmin",
+        "name": "nodeOpAddr",
         "type": "address"
       },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "newAdmin",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "reputationScore",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "discountRate",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "duration",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "bidPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "auctionScore",
+        "type": "uint256"
       }
     ],
-    "name": "AdminChanged",
+    "name": "BidPlaced",
     "type": "event"
   },
   {
@@ -33,11 +71,47 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "beacon",
+        "name": "nodeOpAddr",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "reputationScore",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "oldAuctionScore",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newDuration",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newDiscountRate",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newBidPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newAuctionScore",
+        "type": "uint256"
       }
     ],
-    "name": "BeaconUpgraded",
+    "name": "BidUpdated",
     "type": "event"
   },
   {
@@ -46,71 +120,366 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "implementation",
-        "type": "address"
-      }
-    ],
-    "name": "Upgraded",
-    "type": "event"
-  },
-  { "stateMutability": "payable", "type": "fallback" },
-  {
-    "inputs": [],
-    "name": "admin",
-    "outputs": [
-      { "internalType": "address", "name": "admin_", "type": "address" }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "newAdmin", "type": "address" }
-    ],
-    "name": "changeAdmin",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "implementation",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "implementation_",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "newImplementation",
-        "type": "address"
-      }
-    ],
-    "name": "upgradeTo",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "newImplementation",
+        "name": "nodeOpAddr",
         "type": "address"
       },
-      { "internalType": "bytes", "name": "data", "type": "bytes" }
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "auctionScore",
+        "type": "uint256"
+      }
     ],
-    "name": "upgradeToAndCall",
+    "name": "BidWithdrawn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "version",
+        "type": "uint8"
+      }
+    ],
+    "name": "Initialized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "nodeOpAddr",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "auctionScore",
+        "type": "uint256"
+      }
+    ],
+    "name": "WinnerJoinedDV",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_nodeOpAddr", "type": "address" }
+    ],
+    "name": "addNodeOpToWhitelist",
     "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "_discountRates",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_timesInDays",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "bid",
+    "outputs": [
+      { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
+    ],
     "stateMutability": "payable",
     "type": "function"
   },
-  { "stateMutability": "payable", "type": "receive" }
+  {
+    "inputs": [],
+    "name": "clusterSize",
+    "outputs": [{ "internalType": "uint8", "name": "", "type": "uint8" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "escrow",
+    "outputs": [
+      { "internalType": "contract IEscrow", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "expectedDailyReturnWei",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAuctionWinners",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "vcNumber", "type": "uint256" },
+          {
+            "internalType": "uint128",
+            "name": "reputation",
+            "type": "uint128"
+          },
+          { "internalType": "address", "name": "eth1Addr", "type": "address" }
+        ],
+        "internalType": "struct IStrategyModule.Node[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_nodeOpAddr", "type": "address" },
+      { "internalType": "uint256", "name": "_auctionScore", "type": "uint256" }
+    ],
+    "name": "getNodeOpAuctionScoreBidPrices",
+    "outputs": [
+      { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_nodeOpAddr", "type": "address" },
+      { "internalType": "uint256", "name": "_auctionScore", "type": "uint256" }
+    ],
+    "name": "getNodeOpAuctionScoreVcs",
+    "outputs": [
+      { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_nodeOpAddr", "type": "address" }
+    ],
+    "name": "getNodeOpBidNumber",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_nodeOpAddr", "type": "address" },
+      {
+        "internalType": "uint256[]",
+        "name": "_discountRates",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_timesInDays",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "getPriceToPay",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_nodeOpAddr", "type": "address" },
+      {
+        "internalType": "uint256",
+        "name": "_oldAuctionScore",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_newDiscountRate",
+        "type": "uint256"
+      },
+      { "internalType": "uint256", "name": "_newTimeInDays", "type": "uint256" }
+    ],
+    "name": "getUpdateOneBidPrice",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_initialOwner", "type": "address" },
+      {
+        "internalType": "uint256",
+        "name": "_expectedDailyReturnWei",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint16",
+        "name": "_maxDiscountRate",
+        "type": "uint16"
+      },
+      { "internalType": "uint160", "name": "_minDuration", "type": "uint160" },
+      { "internalType": "uint8", "name": "_clusterSize", "type": "uint8" }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_nodeOpAddr", "type": "address" }
+    ],
+    "name": "isWhitelisted",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxDiscountRate",
+    "outputs": [{ "internalType": "uint16", "name": "", "type": "uint16" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minDuration",
+    "outputs": [{ "internalType": "uint160", "name": "", "type": "uint160" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "numNodeOpsInAuction",
+    "outputs": [{ "internalType": "uint64", "name": "", "type": "uint64" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_nodeOpAddr", "type": "address" }
+    ],
+    "name": "removeNodeOpFromWhitelist",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "strategyModuleManager",
+    "outputs": [
+      {
+        "internalType": "contract IStrategyModuleManager",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "newOwner", "type": "address" }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_expectedDailyReturnWei",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint16",
+        "name": "_maxDiscountRate",
+        "type": "uint16"
+      },
+      { "internalType": "uint160", "name": "_minDuration", "type": "uint160" }
+    ],
+    "name": "updateAuctionConfig",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint8", "name": "_clusterSize", "type": "uint8" }
+    ],
+    "name": "updateClusterSize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_oldAuctionScore",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_newDiscountRate",
+        "type": "uint256"
+      },
+      { "internalType": "uint256", "name": "_newTimeInDays", "type": "uint256" }
+    ],
+    "name": "updateOneBid",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_auctionScore", "type": "uint256" }
+    ],
+    "name": "withdrawBid",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
 ]

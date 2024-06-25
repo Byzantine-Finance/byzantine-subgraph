@@ -1,24 +1,26 @@
-type AdminChanged @entity(immutable: true) {
-  id: Bytes!
-  previousAdmin: Bytes! # address
-  newAdmin: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type NodeOperator @entity {
+  id: Bytes! # nodeOpAddr as ID
+  nodeOpAddr: String! # address
+  reputationScore: BigInt! # uint256
+  hasActiveBids: Boolean!
+  bids: [BidPlaced!] @derivedFrom(field: "nodeOp")
 }
 
-type BeaconUpgraded @entity(immutable: true) {
+type BidPlaced @entity {
   id: Bytes!
-  beacon: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+  nodeOp: NodeOperator! # reference to NodeOperator
+  discountRate: BigDecimal! # Scaled down to 1e2
+  duration: BigInt! # uint256
+  bidPrice: BigDecimal! # Converted bidPrice in Ether
+  uint256AuctionScore: BigInt! # uint256
+  auctionScore: BigDecimal! # Scaled down to 1e18
+  reputationScore: BigInt! # uint256
+  timestamp: BigInt!
+  bidStatus: BidStatus!
 }
 
-type Upgraded @entity(immutable: true) {
-  id: Bytes!
-  implementation: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+enum BidStatus {
+  Closed # bid withdrawn or already won 
+  Pending # bid active
+  Active # winner in DV
 }
