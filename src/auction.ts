@@ -181,22 +181,6 @@ export function handleWinnerJoinedDV(event: WinnerJoinedDVEvent): void {
   }
 
   // Iteration to check if there are any active bids left in the NodeOperator entity
-  for (let i = 0; i < nodeOpEntity.bids.load().length; i++) {
-    let bid = nodeOpEntity.bids.load()[i];
-
-    // If at least one bid is active, update the hasActiveBids field to true and exit the loop
-    if (bid.bidStatus == "Pending") {
-      nodeOpEntity.hasActiveBids = true;
-      nodeOpEntity.save();
-      break;
-    } else {
-      // If the current bid is inactive, update the hasActiveBids field to false and continue
-      nodeOpEntity.hasActiveBids = false;
-      nodeOpEntity.save();
-    }
-  }
-
-  // Iteration to check if there are any active bids left in the NodeOperator entity
   let hasActiveBids = false;
   for (let i = 0; i < nodeOpEntity.bids.load().length; i++) {
     let bid = nodeOpEntity.bids.load()[i];
