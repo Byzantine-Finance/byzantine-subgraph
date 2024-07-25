@@ -4,7 +4,7 @@ import {
   BidWithdrawn as BidWithdrawnEvent,
   WinnerJoinedDV as WinnerJoinedDVEvent,
 } from "../generated/Auction/Auction";
-import { NodeOperator, BidPlaced } from "../generated/schema";
+import { NodeOperator, BidPlaced, DV } from "../generated/schema";
 import {
   ethereum,
   JSONValue,
@@ -48,12 +48,8 @@ export function handleBidPlaced(event: BidPlacedEvent): void {
   bidEntity.duration = event.params.duration;
   bidEntity.bidPrice = scaleDown(event.params.bidPrice, "1000000000000000000");
   bidEntity.uint256AuctionScore = event.params.auctionScore;
-  bidEntity.auctionScore = scaleDown(
-    event.params.auctionScore,
-    "1000000000000000000"
-  );
-  bidEntity.reputationScore = event.params.reputationScore;
   bidEntity.timestamp = event.block.timestamp;
+  bidEntity.txHash = event.transaction.hash.toHex();
   bidEntity.bidStatus = "Pending";
 
   bidEntity.save();
@@ -72,8 +68,9 @@ export function handleBidUpdated(event: BidUpdatedEvent): void {
   }
 
   // Get the corresponding Bid ID
-  for (let i = 0; i < nodeOpEntity.bids.load().length; i++) {
-    let bid = nodeOpEntity.bids.load()[i];
+  let bids = nodeOpEntity.bids.load();
+  for (let i = bids.length - 1; i >= 0; i--) {
+    let bid = bids[i];
     let bidId = bid.id;
 
     // If the Bid entity doesn't exist, log a warning
@@ -93,14 +90,10 @@ export function handleBidUpdated(event: BidUpdatedEvent): void {
           "1000000000000000000"
         );
         bid.uint256AuctionScore = event.params.newAuctionScore;
-        bid.auctionScore = scaleDown(
-          event.params.newAuctionScore,
-          "1000000000000000000"
-        );
-        bid.reputationScore = event.params.reputationScore;
         bid.timestamp = event.block.timestamp;
+        bid.txHash = event.transaction.hash.toHex();
         bid.save();
-        break; // Only update the first bid that matches the auctionScore
+        break; // Only update the last bid that matches the auctionScore
       }
     }
   }
@@ -120,8 +113,9 @@ export function handleBidWithdrawn(event: BidWithdrawnEvent): void {
 
   // If the NodeOperator entity exists
   // Iterate through all the bids of the NodeOperator
-  for (let i = 0; i < nodeOpEntity.bids.load().length; i++) {
-    let bid = nodeOpEntity.bids.load()[i];
+  let bids = nodeOpEntity.bids.load();
+  for (let i = bids.length - 1; i >= 0; i--) {
+    let bid = bids[i];
     let bidAuctionScore = bid.uint256AuctionScore;
 
     // Find the bid that matches the auctionScore of the event and has a Pending status
@@ -130,8 +124,10 @@ export function handleBidWithdrawn(event: BidWithdrawnEvent): void {
       bid.bidStatus == "Pending"
     ) {
       bid.bidStatus = "Closed";
+      bid.txHash = event.transaction.hash.toHex();
+      bid.timestamp = event.block.timestamp;
       bid.save();
-      break; // Only "withdraw" the first bid in the array that matches the auctionScore
+      break; // Only "withdraw" the last bid in the array that matches the auctionScore
     }
   }
 
@@ -163,10 +159,10 @@ export function handleWinnerJoinedDV(event: WinnerJoinedDVEvent): void {
     return;
   }
 
-  // If the NodeOperator entity exists
-  // Iterate through all the bids of the NodeOperator
-  for (let i = 0; i < nodeOpEntity.bids.load().length; i++) {
-    let bid = nodeOpEntity.bids.load()[i];
+  // If the NodeOperator entity exists, iterate through all the bids of the NodeOperator
+  let bids = nodeOpEntity.bids.load();
+  for (let i = bids.length - 1; i >= 0; i--) {
+    let bid = bids[i];
     let bidAuctionScore = bid.uint256AuctionScore;
 
     // Find the bid that matches the auctionScore of the event and it is an active bid
@@ -175,8 +171,30 @@ export function handleWinnerJoinedDV(event: WinnerJoinedDVEvent): void {
       bid.bidStatus == "Pending"
     ) {
       bid.bidStatus = "Active";
+      bid.txHash = event.transaction.hash.toHex();
+      bid.timestamp = event.block.timestamp;
       bid.save();
-      break; // Only the first bid in the array that matches the auctionScore is the winner
+
+      // Load the DV entity using the tx hash from the event
+      let dv = DV.load(event.transaction.hash);
+
+      // If the DV entity doesn't exist, create a new one
+      if (dv == null) {
+        dv = new DV(event.transaction.hash);
+        dv.timestamp = event.block.timestamp;
+        dv.txHash = event.transaction.hash.toHex();
+        dv.winners = [];
+        dv.save();
+      }
+
+      // Push the BidPlaced entity to the list of winners
+      // @dev Need to re-assign to be able to use push!
+      let winners = dv.winners;
+      winners.push(bid.id);
+      dv.winners = winners;
+      dv.save();
+
+      break; // Only the last bid in the array that matches the auctionScore is the winner
     }
   }
 

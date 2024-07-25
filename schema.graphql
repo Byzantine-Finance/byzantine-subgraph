@@ -13,14 +13,20 @@ type BidPlaced @entity {
   duration: BigInt! # uint256
   bidPrice: BigDecimal! # Converted bidPrice in Ether
   uint256AuctionScore: BigInt! # uint256
-  auctionScore: BigDecimal! # Scaled down to 1e18
-  reputationScore: BigInt! # uint256
   timestamp: BigInt!
+  txHash: String # hash of the transaction
   bidStatus: BidStatus!
 }
 
+type DV @entity {
+  id: Bytes! # hash of the transaction
+  timestamp: BigInt!
+  txHash: String!
+  winners: [BidPlaced!]!
+}
+
 enum BidStatus {
-  Closed # bid withdrawn or already won 
+  Closed # bid withdrawn or already won
   Pending # bid active
   Active # winner in DV
 }
