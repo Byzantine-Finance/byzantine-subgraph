@@ -1,0 +1,14 @@
+query GetPendingBids @live {
+  bidPlaceds(where: {bidStatus: Pending}, orderBy: timestamp, orderDirection: asc) {
+    nodeOp {
+      nodeOpAddr
+    }
+    discountRate
+    duration
+    bidPrice
+    uint256AuctionScore
+    bidStatus
+    timestamp
+    txHash
+  }
+}

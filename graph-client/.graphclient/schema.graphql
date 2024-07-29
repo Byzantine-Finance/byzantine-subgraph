@@ -1,0 +1,526 @@
+schema {
+  query: Query
+  subscription: Subscription
+}
+
+"""
+Marks the GraphQL type as indexable entity.  Each type that should be an entity is required to be annotated with this directive.
+"""
+directive @entity on OBJECT
+
+"""Defined a Subgraph ID for an object type"""
+directive @subgraphId(id: String!) on OBJECT
+
+"""
+creates a virtual field on the entity that may be queried but cannot be set manually through the mappings API.
+"""
+directive @derivedFrom(field: String!) on FIELD_DEFINITION
+
+enum Aggregation_interval {
+  hour
+  day
+}
+
+type BidPlaced {
+  id: Bytes!
+  nodeOp: NodeOperator!
+  discountRate: BigDecimal!
+  duration: BigInt!
+  bidPrice: BigDecimal!
+  uint256AuctionScore: BigInt!
+  timestamp: BigInt!
+  txHash: String
+  bidStatus: BidStatus!
+}
+
+input BidPlaced_filter {
+  id: Bytes
+  id_not: Bytes
+  id_gt: Bytes
+  id_lt: Bytes
+  id_gte: Bytes
+  id_lte: Bytes
+  id_in: [Bytes!]
+  id_not_in: [Bytes!]
+  id_contains: Bytes
+  id_not_contains: Bytes
+  nodeOp: String
+  nodeOp_not: String
+  nodeOp_gt: String
+  nodeOp_lt: String
+  nodeOp_gte: String
+  nodeOp_lte: String
+  nodeOp_in: [String!]
+  nodeOp_not_in: [String!]
+  nodeOp_contains: String
+  nodeOp_contains_nocase: String
+  nodeOp_not_contains: String
+  nodeOp_not_contains_nocase: String
+  nodeOp_starts_with: String
+  nodeOp_starts_with_nocase: String
+  nodeOp_not_starts_with: String
+  nodeOp_not_starts_with_nocase: String
+  nodeOp_ends_with: String
+  nodeOp_ends_with_nocase: String
+  nodeOp_not_ends_with: String
+  nodeOp_not_ends_with_nocase: String
+  nodeOp_: NodeOperator_filter
+  discountRate: BigDecimal
+  discountRate_not: BigDecimal
+  discountRate_gt: BigDecimal
+  discountRate_lt: BigDecimal
+  discountRate_gte: BigDecimal
+  discountRate_lte: BigDecimal
+  discountRate_in: [BigDecimal!]
+  discountRate_not_in: [BigDecimal!]
+  duration: BigInt
+  duration_not: BigInt
+  duration_gt: BigInt
+  duration_lt: BigInt
+  duration_gte: BigInt
+  duration_lte: BigInt
+  duration_in: [BigInt!]
+  duration_not_in: [BigInt!]
+  bidPrice: BigDecimal
+  bidPrice_not: BigDecimal
+  bidPrice_gt: BigDecimal
+  bidPrice_lt: BigDecimal
+  bidPrice_gte: BigDecimal
+  bidPrice_lte: BigDecimal
+  bidPrice_in: [BigDecimal!]
+  bidPrice_not_in: [BigDecimal!]
+  uint256AuctionScore: BigInt
+  uint256AuctionScore_not: BigInt
+  uint256AuctionScore_gt: BigInt
+  uint256AuctionScore_lt: BigInt
+  uint256AuctionScore_gte: BigInt
+  uint256AuctionScore_lte: BigInt
+  uint256AuctionScore_in: [BigInt!]
+  uint256AuctionScore_not_in: [BigInt!]
+  timestamp: BigInt
+  timestamp_not: BigInt
+  timestamp_gt: BigInt
+  timestamp_lt: BigInt
+  timestamp_gte: BigInt
+  timestamp_lte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_not_in: [BigInt!]
+  txHash: String
+  txHash_not: String
+  txHash_gt: String
+  txHash_lt: String
+  txHash_gte: String
+  txHash_lte: String
+  txHash_in: [String!]
+  txHash_not_in: [String!]
+  txHash_contains: String
+  txHash_contains_nocase: String
+  txHash_not_contains: String
+  txHash_not_contains_nocase: String
+  txHash_starts_with: String
+  txHash_starts_with_nocase: String
+  txHash_not_starts_with: String
+  txHash_not_starts_with_nocase: String
+  txHash_ends_with: String
+  txHash_ends_with_nocase: String
+  txHash_not_ends_with: String
+  txHash_not_ends_with_nocase: String
+  bidStatus: BidStatus
+  bidStatus_not: BidStatus
+  bidStatus_in: [BidStatus!]
+  bidStatus_not_in: [BidStatus!]
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [BidPlaced_filter]
+  or: [BidPlaced_filter]
+}
+
+enum BidPlaced_orderBy {
+  id
+  nodeOp
+  nodeOp__id
+  nodeOp__nodeOpAddr
+  nodeOp__reputationScore
+  nodeOp__hasActiveBids
+  discountRate
+  duration
+  bidPrice
+  uint256AuctionScore
+  timestamp
+  txHash
+  bidStatus
+}
+
+enum BidStatus {
+  Closed
+  Pending
+  Active
+}
+
+scalar BigDecimal
+
+scalar BigInt
+
+input BlockChangedFilter {
+  number_gte: Int!
+}
+
+input Block_height {
+  hash: Bytes
+  number: Int
+  number_gte: Int
+}
+
+scalar Bytes
+
+type DV {
+  id: Bytes!
+  timestamp: BigInt!
+  txHash: String!
+  winners(skip: Int = 0, first: Int = 100, orderBy: BidPlaced_orderBy, orderDirection: OrderDirection, where: BidPlaced_filter): [BidPlaced!]!
+}
+
+input DV_filter {
+  id: Bytes
+  id_not: Bytes
+  id_gt: Bytes
+  id_lt: Bytes
+  id_gte: Bytes
+  id_lte: Bytes
+  id_in: [Bytes!]
+  id_not_in: [Bytes!]
+  id_contains: Bytes
+  id_not_contains: Bytes
+  timestamp: BigInt
+  timestamp_not: BigInt
+  timestamp_gt: BigInt
+  timestamp_lt: BigInt
+  timestamp_gte: BigInt
+  timestamp_lte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_not_in: [BigInt!]
+  txHash: String
+  txHash_not: String
+  txHash_gt: String
+  txHash_lt: String
+  txHash_gte: String
+  txHash_lte: String
+  txHash_in: [String!]
+  txHash_not_in: [String!]
+  txHash_contains: String
+  txHash_contains_nocase: String
+  txHash_not_contains: String
+  txHash_not_contains_nocase: String
+  txHash_starts_with: String
+  txHash_starts_with_nocase: String
+  txHash_not_starts_with: String
+  txHash_not_starts_with_nocase: String
+  txHash_ends_with: String
+  txHash_ends_with_nocase: String
+  txHash_not_ends_with: String
+  txHash_not_ends_with_nocase: String
+  winners: [String!]
+  winners_not: [String!]
+  winners_contains: [String!]
+  winners_contains_nocase: [String!]
+  winners_not_contains: [String!]
+  winners_not_contains_nocase: [String!]
+  winners_: BidPlaced_filter
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [DV_filter]
+  or: [DV_filter]
+}
+
+enum DV_orderBy {
+  id
+  timestamp
+  txHash
+  winners
+}
+
+"""
+8 bytes signed integer
+
+"""
+scalar Int8
+
+type NodeOperator {
+  id: Bytes!
+  nodeOpAddr: String!
+  reputationScore: BigInt!
+  hasActiveBids: Boolean!
+  bids(skip: Int = 0, first: Int = 100, orderBy: BidPlaced_orderBy, orderDirection: OrderDirection, where: BidPlaced_filter): [BidPlaced!]
+}
+
+input NodeOperator_filter {
+  id: Bytes
+  id_not: Bytes
+  id_gt: Bytes
+  id_lt: Bytes
+  id_gte: Bytes
+  id_lte: Bytes
+  id_in: [Bytes!]
+  id_not_in: [Bytes!]
+  id_contains: Bytes
+  id_not_contains: Bytes
+  nodeOpAddr: String
+  nodeOpAddr_not: String
+  nodeOpAddr_gt: String
+  nodeOpAddr_lt: String
+  nodeOpAddr_gte: String
+  nodeOpAddr_lte: String
+  nodeOpAddr_in: [String!]
+  nodeOpAddr_not_in: [String!]
+  nodeOpAddr_contains: String
+  nodeOpAddr_contains_nocase: String
+  nodeOpAddr_not_contains: String
+  nodeOpAddr_not_contains_nocase: String
+  nodeOpAddr_starts_with: String
+  nodeOpAddr_starts_with_nocase: String
+  nodeOpAddr_not_starts_with: String
+  nodeOpAddr_not_starts_with_nocase: String
+  nodeOpAddr_ends_with: String
+  nodeOpAddr_ends_with_nocase: String
+  nodeOpAddr_not_ends_with: String
+  nodeOpAddr_not_ends_with_nocase: String
+  reputationScore: BigInt
+  reputationScore_not: BigInt
+  reputationScore_gt: BigInt
+  reputationScore_lt: BigInt
+  reputationScore_gte: BigInt
+  reputationScore_lte: BigInt
+  reputationScore_in: [BigInt!]
+  reputationScore_not_in: [BigInt!]
+  hasActiveBids: Boolean
+  hasActiveBids_not: Boolean
+  hasActiveBids_in: [Boolean!]
+  hasActiveBids_not_in: [Boolean!]
+  bids_: BidPlaced_filter
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [NodeOperator_filter]
+  or: [NodeOperator_filter]
+}
+
+enum NodeOperator_orderBy {
+  id
+  nodeOpAddr
+  reputationScore
+  hasActiveBids
+  bids
+}
+
+"""Defines the order direction, either ascending or descending"""
+enum OrderDirection {
+  asc
+  desc
+}
+
+type Query {
+  nodeOperator(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): NodeOperator
+  nodeOperators(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: NodeOperator_orderBy
+    orderDirection: OrderDirection
+    where: NodeOperator_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [NodeOperator!]!
+  bidPlaced(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): BidPlaced
+  bidPlaceds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: BidPlaced_orderBy
+    orderDirection: OrderDirection
+    where: BidPlaced_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [BidPlaced!]!
+  dv(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): DV
+  dvs(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: DV_orderBy
+    orderDirection: OrderDirection
+    where: DV_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [DV!]!
+  """Access to subgraph metadata"""
+  _meta(block: Block_height): _Meta_
+}
+
+type Subscription {
+  nodeOperator(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): NodeOperator
+  nodeOperators(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: NodeOperator_orderBy
+    orderDirection: OrderDirection
+    where: NodeOperator_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [NodeOperator!]!
+  bidPlaced(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): BidPlaced
+  bidPlaceds(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: BidPlaced_orderBy
+    orderDirection: OrderDirection
+    where: BidPlaced_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [BidPlaced!]!
+  dv(
+    id: ID!
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): DV
+  dvs(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: DV_orderBy
+    orderDirection: OrderDirection
+    where: DV_filter
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [DV!]!
+  """Access to subgraph metadata"""
+  _meta(block: Block_height): _Meta_
+}
+
+"""
+A string representation of microseconds UNIX timestamp (16 digits)
+
+"""
+scalar Timestamp
+
+type _Block_ {
+  """The hash of the block"""
+  hash: Bytes
+  """The block number"""
+  number: Int!
+  """Integer representation of the timestamp stored in blocks for the chain"""
+  timestamp: Int
+  """The hash of the parent block"""
+  parentHash: Bytes
+}
+
+"""The type for the top-level _meta field"""
+type _Meta_ {
+  """
+  Information about a specific subgraph block. The hash of the block
+  will be null if the _meta field has a block constraint that asks for
+  a block number. It will be filled if the _meta field has no block constraint
+  and therefore asks for the latest  block
+  
+  """
+  block: _Block_!
+  """The deployment ID"""
+  deployment: String!
+  """If `true`, the subgraph encountered indexing errors at some past block"""
+  hasIndexingErrors: Boolean!
+}
+
+enum _SubgraphErrorPolicy_ {
+  """Data will be returned even if the subgraph has indexing errors"""
+  allow
+  """
+  If the subgraph has indexing errors, data will be omitted. The default.
+  """
+  deny
+}
