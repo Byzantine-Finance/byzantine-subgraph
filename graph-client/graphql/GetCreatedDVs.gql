@@ -1,0 +1,16 @@
+query GetCreatedDVs @live(interval: 30000) {
+  dvs(orderBy: timestamp, orderDirection: desc) {
+    timestamp
+    txHash
+    winners {
+      nodeOp {
+        nodeOpAddr
+      }
+      duration
+      discountRate
+      bidPrice
+      uint256AuctionScore
+      bidStatus
+    }
+  }
+}

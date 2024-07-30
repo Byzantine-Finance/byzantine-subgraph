@@ -848,7 +848,7 @@ sources[0] = {
         }
 additionalEnvelopPlugins[0] = await UsePollingLive({
           ...({
-  "defaultInterval": 10000
+  "defaultInterval": 1000
 }),
           logger: logger.child("pollingLive"),
           cache,
@@ -864,7 +864,7 @@ const merger = new(BareMerger as any)({
         store: rootStore.child('bareMerger')
       })
 const documentHashMap = {
-        "016a379fe8f0220deb1e75e6d9f5ddce8e37fed9d8fa9ba4f1b2cc573b85175f": GetPendingBidsDocument
+        "35b58a58120028f9364e0c4d03e93bd913ef0991fe688d037f572aa8770d09bb": GetCreatedDVsDocument
       }
 additionalEnvelopPlugins.push(usePersistedOperations({
         getPersistedOperation(key) {
@@ -886,12 +886,12 @@ additionalEnvelopPlugins.push(usePersistedOperations({
     get documents() {
       return [
       {
-        document: GetPendingBidsDocument,
+        document: GetCreatedDVsDocument,
         get rawSDL() {
-          return printWithCache(GetPendingBidsDocument);
+          return printWithCache(GetCreatedDVsDocument);
         },
-        location: 'GetPendingBidsDocument.graphql',
-        sha256Hash: '016a379fe8f0220deb1e75e6d9f5ddce8e37fed9d8fa9ba4f1b2cc573b85175f'
+        location: 'GetCreatedDVsDocument.graphql',
+        sha256Hash: '35b58a58120028f9364e0c4d03e93bd913ef0991fe688d037f572aa8770d09bb'
       }
     ];
     },
@@ -946,38 +946,43 @@ export function getBuiltGraphSDK<TGlobalContext = any, TOperationContext = any>(
   const sdkRequester$ = getBuiltGraphClient().then(({ sdkRequesterFactory }) => sdkRequesterFactory(globalContext));
   return getSdk<TOperationContext, TGlobalContext>((...args) => sdkRequester$.then(sdkRequester => sdkRequester(...args)));
 }
-export type GetPendingBidsQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetCreatedDVsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetPendingBidsQuery = { bidPlaceds: Array<(
-    Pick<BidPlaced, 'discountRate' | 'duration' | 'bidPrice' | 'uint256AuctionScore' | 'bidStatus' | 'timestamp' | 'txHash'>
-    & { nodeOp: Pick<NodeOperator, 'nodeOpAddr'> }
+export type GetCreatedDVsQuery = { dvs: Array<(
+    Pick<DV, 'timestamp' | 'txHash'>
+    & { winners: Array<(
+      Pick<BidPlaced, 'duration' | 'discountRate' | 'bidPrice' | 'uint256AuctionScore' | 'bidStatus'>
+      & { nodeOp: Pick<NodeOperator, 'nodeOpAddr'> }
+    )> }
   )> };
 
 
-export const GetPendingBidsDocument = gql`
-    query GetPendingBids @live {
-  bidPlaceds(where: {bidStatus: Pending}, orderBy: timestamp, orderDirection: asc) {
-    nodeOp {
-      nodeOpAddr
-    }
-    discountRate
-    duration
-    bidPrice
-    uint256AuctionScore
-    bidStatus
+export const GetCreatedDVsDocument = gql`
+    query GetCreatedDVs @live(interval: 30000) {
+  dvs(orderBy: timestamp, orderDirection: desc) {
     timestamp
     txHash
+    winners {
+      nodeOp {
+        nodeOpAddr
+      }
+      duration
+      discountRate
+      bidPrice
+      uint256AuctionScore
+      bidStatus
+    }
   }
 }
-    ` as unknown as DocumentNode<GetPendingBidsQuery, GetPendingBidsQueryVariables>;
+    ` as unknown as DocumentNode<GetCreatedDVsQuery, GetCreatedDVsQueryVariables>;
 
 
 export type Requester<C = {}, E = unknown> = <R, V>(doc: DocumentNode, vars?: V, options?: C) => Promise<R> | AsyncIterable<R>
 export function getSdk<C, E>(requester: Requester<C, E>) {
   return {
-    GetPendingBids(variables?: GetPendingBidsQueryVariables, options?: C): AsyncIterable<GetPendingBidsQuery> {
-      return requester<GetPendingBidsQuery, GetPendingBidsQueryVariables>(GetPendingBidsDocument, variables, options) as AsyncIterable<GetPendingBidsQuery>;
+    GetCreatedDVs(variables?: GetCreatedDVsQueryVariables, options?: C): AsyncIterable<GetCreatedDVsQuery> {
+      return requester<GetCreatedDVsQuery, GetCreatedDVsQueryVariables>(GetCreatedDVsDocument, variables, options) as AsyncIterable<GetCreatedDVsQuery>;
     }
   };
 }
