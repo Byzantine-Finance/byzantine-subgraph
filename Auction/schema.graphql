@@ -1,0 +1,71 @@
+type BidPlaced @entity(immutable: true) {
+  id: Bytes!
+  nodeOpAddr: Bytes! # address
+  bidId: Bytes! # bytes32
+  discountRate: Int! # uint16
+  duration: BigInt! # uint32
+  bidPrice: BigInt! # uint256
+  auctionScore: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type BidUpdated @entity(immutable: true) {
+  id: Bytes!
+  nodeOpAddr: Bytes! # address
+  oldBidId: Bytes! # bytes32
+  newBidId: Bytes! # bytes32
+  newDiscountRate: Int! # uint16
+  newDuration: BigInt! # uint32
+  newBidPrice: BigInt! # uint256
+  newAuctionScore: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type BidWithdrawn @entity(immutable: true) {
+  id: Bytes!
+  nodeOpAddr: Bytes! # address
+  bidId: Bytes! # bytes32
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ClusterCreated @entity(immutable: true) {
+  id: Bytes!
+  clusterId: Bytes! # bytes32
+  averageAuctionScore: BigInt! # uint256
+  splitAddr: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Initialized @entity(immutable: true) {
+  id: Bytes!
+  version: Int! # uint8
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OwnershipTransferred @entity(immutable: true) {
+  id: Bytes!
+  previousOwner: Bytes! # address
+  newOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type WinnerJoinedCluster @entity(immutable: true) {
+  id: Bytes!
+  nodeOpAddr: Bytes! # address
+  clusterJoined: Bytes! # bytes32
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
