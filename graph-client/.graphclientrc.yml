@@ -1,0 +1,10 @@
+sources:
+  - name: Byzantine Holesky
+    handler:
+      graphql:
+        endpoint: https://api.studio.thegraph.com/query/77400/v5-auction-byzantine-holesky/version/latest
+documents:
+  - ./graphql/GetCreatedDVs.gql
+plugins:
+  - pollingLive:
+      defaultInterval: 1000
