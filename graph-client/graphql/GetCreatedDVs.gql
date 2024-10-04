@@ -1,15 +1,19 @@
 query GetCreatedDVs @live(interval: 30000) {
-  dvs(orderBy: timestamp, orderDirection: desc) {
+  clusterCreateds(orderBy: timestamp, orderDirection: desc) {
+    id
     timestamp
     txHash
+    splitAddress
+    averageAuctionScore
     winners {
+      id
       nodeOp {
         nodeOpAddr
       }
       duration
       discountRate
       bidPrice
-      uint256AuctionScore
+      auctionScore
       bidStatus
     }
   }
