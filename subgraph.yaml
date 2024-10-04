@@ -31,7 +31,7 @@ dataSources:
           handler: handleBidUpdated
         - event: BidWithdrawn(indexed address,indexed bytes32)
           handler: handleBidWithdrawn
-        - event: WinnerJoinedCluster(indexed address,indexed bytes32)
+        - event: WinnerJoinedCluster(indexed address,indexed bytes32,bytes32)
           handler: handleWinnerJoinedCluster
         - event: ClusterCreated(indexed bytes32,uint256,address)
           handler: handleClusterCreated

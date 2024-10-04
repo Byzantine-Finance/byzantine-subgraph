@@ -3,27 +3,13 @@ import { GraphQLResolveInfo, SelectionSetNode, FieldNode, GraphQLScalarType, Gra
 import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 import { gql } from '@graphql-mesh/utils';
 
-import type { GetMeshOptions } from '@graphql-mesh/runtime';
-import type { YamlConfig } from '@graphql-mesh/types';
-import { PubSub } from '@graphql-mesh/utils';
-import { DefaultLogger } from '@graphql-mesh/utils';
-import MeshCache from "@graphql-mesh/cache-localforage";
-import { fetch as fetchFn } from '@whatwg-node/fetch';
-
-import { MeshResolvedSource } from '@graphql-mesh/runtime';
-import { MeshTransform, MeshPlugin } from '@graphql-mesh/types';
-import GraphqlHandler from "@graphql-mesh/graphql"
-import UsePollingLive from "@graphprotocol/client-polling-live";
-import BareMerger from "@graphql-mesh/merger-bare";
-import { printWithCache } from '@graphql-mesh/utils';
-import { usePersistedOperations } from '@graphql-yoga/plugin-persisted-operations';
+import { findAndParseConfig } from '@graphql-mesh/cli';
 import { createMeshHTTPHandler, MeshHTTPHandler } from '@graphql-mesh/http';
 import { getMesh, ExecuteMeshFn, SubscribeMeshFn, MeshContext as BaseMeshContext, MeshInstance } from '@graphql-mesh/runtime';
 import { MeshStore, FsStoreStorageAdapter } from '@graphql-mesh/store';
 import { path as pathModule } from '@graphql-mesh/cross-helpers';
 import { ImportFn } from '@graphql-mesh/types';
 import type { ByzantineHoleskyTypes } from './sources/Byzantine Holesky/types';
-import * as importedModule$0 from "./sources/Byzantine Holesky/introspectionSchema";
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -59,7 +45,7 @@ export type BidPlaced = {
   discountRate: Scalars['BigDecimal']['output'];
   duration: Scalars['BigInt']['output'];
   bidPrice: Scalars['BigDecimal']['output'];
-  uint256AuctionScore: Scalars['BigInt']['output'];
+  auctionScore: Scalars['BigInt']['output'];
   timestamp: Scalars['BigInt']['output'];
   txHash?: Maybe<Scalars['String']['output']>;
   bidStatus: BidStatus;
@@ -121,14 +107,14 @@ export type BidPlaced_filter = {
   bidPrice_lte?: InputMaybe<Scalars['BigDecimal']['input']>;
   bidPrice_in?: InputMaybe<Array<Scalars['BigDecimal']['input']>>;
   bidPrice_not_in?: InputMaybe<Array<Scalars['BigDecimal']['input']>>;
-  uint256AuctionScore?: InputMaybe<Scalars['BigInt']['input']>;
-  uint256AuctionScore_not?: InputMaybe<Scalars['BigInt']['input']>;
-  uint256AuctionScore_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  uint256AuctionScore_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  uint256AuctionScore_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  uint256AuctionScore_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  uint256AuctionScore_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  uint256AuctionScore_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  auctionScore?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionScore_not?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionScore_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionScore_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionScore_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionScore_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionScore_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  auctionScore_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   timestamp?: InputMaybe<Scalars['BigInt']['input']>;
   timestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
   timestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
@@ -172,12 +158,11 @@ export type BidPlaced_orderBy =
   | 'nodeOp'
   | 'nodeOp__id'
   | 'nodeOp__nodeOpAddr'
-  | 'nodeOp__reputationScore'
-  | 'nodeOp__hasActiveBids'
+  | 'nodeOp__hasPendingBids'
   | 'discountRate'
   | 'duration'
   | 'bidPrice'
-  | 'uint256AuctionScore'
+  | 'auctionScore'
   | 'timestamp'
   | 'txHash'
   | 'bidStatus';
@@ -197,15 +182,17 @@ export type Block_height = {
   number_gte?: InputMaybe<Scalars['Int']['input']>;
 };
 
-export type DV = {
+export type ClusterCreated = {
   id: Scalars['Bytes']['output'];
+  averageAuctionScore: Scalars['BigInt']['output'];
+  splitAddress: Scalars['String']['output'];
   timestamp: Scalars['BigInt']['output'];
   txHash: Scalars['String']['output'];
   winners: Array<BidPlaced>;
 };
 
 
-export type DVwinnersArgs = {
+export type ClusterCreatedwinnersArgs = {
   skip?: InputMaybe<Scalars['Int']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<BidPlaced_orderBy>;
@@ -213,7 +200,7 @@ export type DVwinnersArgs = {
   where?: InputMaybe<BidPlaced_filter>;
 };
 
-export type DV_filter = {
+export type ClusterCreated_filter = {
   id?: InputMaybe<Scalars['Bytes']['input']>;
   id_not?: InputMaybe<Scalars['Bytes']['input']>;
   id_gt?: InputMaybe<Scalars['Bytes']['input']>;
@@ -224,6 +211,34 @@ export type DV_filter = {
   id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
   id_contains?: InputMaybe<Scalars['Bytes']['input']>;
   id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
+  averageAuctionScore?: InputMaybe<Scalars['BigInt']['input']>;
+  averageAuctionScore_not?: InputMaybe<Scalars['BigInt']['input']>;
+  averageAuctionScore_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  averageAuctionScore_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  averageAuctionScore_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  averageAuctionScore_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  averageAuctionScore_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  averageAuctionScore_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  splitAddress?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_not?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_gt?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_lt?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_gte?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_lte?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  splitAddress_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  splitAddress_contains?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_not_contains?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_starts_with?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_ends_with?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
   timestamp?: InputMaybe<Scalars['BigInt']['input']>;
   timestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
   timestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
@@ -261,12 +276,14 @@ export type DV_filter = {
   winners_?: InputMaybe<BidPlaced_filter>;
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<DV_filter>>>;
-  or?: InputMaybe<Array<InputMaybe<DV_filter>>>;
+  and?: InputMaybe<Array<InputMaybe<ClusterCreated_filter>>>;
+  or?: InputMaybe<Array<InputMaybe<ClusterCreated_filter>>>;
 };
 
-export type DV_orderBy =
+export type ClusterCreated_orderBy =
   | 'id'
+  | 'averageAuctionScore'
+  | 'splitAddress'
   | 'timestamp'
   | 'txHash'
   | 'winners';
@@ -274,9 +291,9 @@ export type DV_orderBy =
 export type NodeOperator = {
   id: Scalars['Bytes']['output'];
   nodeOpAddr: Scalars['String']['output'];
-  reputationScore: Scalars['BigInt']['output'];
-  hasActiveBids: Scalars['Boolean']['output'];
+  hasPendingBids: Scalars['Boolean']['output'];
   bids?: Maybe<Array<BidPlaced>>;
+  clusters?: Maybe<Array<ClusterCreated>>;
 };
 
 
@@ -286,6 +303,15 @@ export type NodeOperatorbidsArgs = {
   orderBy?: InputMaybe<BidPlaced_orderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
   where?: InputMaybe<BidPlaced_filter>;
+};
+
+
+export type NodeOperatorclustersArgs = {
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ClusterCreated_orderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  where?: InputMaybe<ClusterCreated_filter>;
 };
 
 export type NodeOperator_filter = {
@@ -319,19 +345,18 @@ export type NodeOperator_filter = {
   nodeOpAddr_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
   nodeOpAddr_not_ends_with?: InputMaybe<Scalars['String']['input']>;
   nodeOpAddr_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  reputationScore?: InputMaybe<Scalars['BigInt']['input']>;
-  reputationScore_not?: InputMaybe<Scalars['BigInt']['input']>;
-  reputationScore_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  reputationScore_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  reputationScore_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  reputationScore_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  reputationScore_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  reputationScore_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  hasActiveBids?: InputMaybe<Scalars['Boolean']['input']>;
-  hasActiveBids_not?: InputMaybe<Scalars['Boolean']['input']>;
-  hasActiveBids_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  hasActiveBids_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  hasPendingBids?: InputMaybe<Scalars['Boolean']['input']>;
+  hasPendingBids_not?: InputMaybe<Scalars['Boolean']['input']>;
+  hasPendingBids_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  hasPendingBids_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
   bids_?: InputMaybe<BidPlaced_filter>;
+  clusters?: InputMaybe<Array<Scalars['String']['input']>>;
+  clusters_not?: InputMaybe<Array<Scalars['String']['input']>>;
+  clusters_contains?: InputMaybe<Array<Scalars['String']['input']>>;
+  clusters_contains_nocase?: InputMaybe<Array<Scalars['String']['input']>>;
+  clusters_not_contains?: InputMaybe<Array<Scalars['String']['input']>>;
+  clusters_not_contains_nocase?: InputMaybe<Array<Scalars['String']['input']>>;
+  clusters_?: InputMaybe<ClusterCreated_filter>;
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
   and?: InputMaybe<Array<InputMaybe<NodeOperator_filter>>>;
@@ -341,9 +366,9 @@ export type NodeOperator_filter = {
 export type NodeOperator_orderBy =
   | 'id'
   | 'nodeOpAddr'
-  | 'reputationScore'
-  | 'hasActiveBids'
-  | 'bids';
+  | 'hasPendingBids'
+  | 'bids'
+  | 'clusters';
 
 /** Defines the order direction, either ascending or descending */
 export type OrderDirection =
@@ -355,8 +380,8 @@ export type Query = {
   nodeOperators: Array<NodeOperator>;
   bidPlaced?: Maybe<BidPlaced>;
   bidPlaceds: Array<BidPlaced>;
-  dv?: Maybe<DV>;
-  dvs: Array<DV>;
+  clusterCreated?: Maybe<ClusterCreated>;
+  clusterCreateds: Array<ClusterCreated>;
   /** Access to subgraph metadata */
   _meta?: Maybe<_Meta_>;
 };
@@ -398,19 +423,19 @@ export type QuerybidPlacedsArgs = {
 };
 
 
-export type QuerydvArgs = {
+export type QueryclusterCreatedArgs = {
   id: Scalars['ID']['input'];
   block?: InputMaybe<Block_height>;
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
 
-export type QuerydvsArgs = {
+export type QueryclusterCreatedsArgs = {
   skip?: InputMaybe<Scalars['Int']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<DV_orderBy>;
+  orderBy?: InputMaybe<ClusterCreated_orderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<DV_filter>;
+  where?: InputMaybe<ClusterCreated_filter>;
   block?: InputMaybe<Block_height>;
   subgraphError?: _SubgraphErrorPolicy_;
 };
@@ -425,8 +450,8 @@ export type Subscription = {
   nodeOperators: Array<NodeOperator>;
   bidPlaced?: Maybe<BidPlaced>;
   bidPlaceds: Array<BidPlaced>;
-  dv?: Maybe<DV>;
-  dvs: Array<DV>;
+  clusterCreated?: Maybe<ClusterCreated>;
+  clusterCreateds: Array<ClusterCreated>;
   /** Access to subgraph metadata */
   _meta?: Maybe<_Meta_>;
 };
@@ -468,19 +493,19 @@ export type SubscriptionbidPlacedsArgs = {
 };
 
 
-export type SubscriptiondvArgs = {
+export type SubscriptionclusterCreatedArgs = {
   id: Scalars['ID']['input'];
   block?: InputMaybe<Block_height>;
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
 
-export type SubscriptiondvsArgs = {
+export type SubscriptionclusterCreatedsArgs = {
   skip?: InputMaybe<Scalars['Int']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<DV_orderBy>;
+  orderBy?: InputMaybe<ClusterCreated_orderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<DV_filter>;
+  where?: InputMaybe<ClusterCreated_filter>;
   block?: InputMaybe<Block_height>;
   subgraphError?: _SubgraphErrorPolicy_;
 };
@@ -620,9 +645,9 @@ export type ResolversTypes = ResolversObject<{
   Block_height: Block_height;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   Bytes: ResolverTypeWrapper<Scalars['Bytes']['output']>;
-  DV: ResolverTypeWrapper<DV>;
-  DV_filter: DV_filter;
-  DV_orderBy: DV_orderBy;
+  ClusterCreated: ResolverTypeWrapper<ClusterCreated>;
+  ClusterCreated_filter: ClusterCreated_filter;
+  ClusterCreated_orderBy: ClusterCreated_orderBy;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
@@ -650,8 +675,8 @@ export type ResolversParentTypes = ResolversObject<{
   Block_height: Block_height;
   Boolean: Scalars['Boolean']['output'];
   Bytes: Scalars['Bytes']['output'];
-  DV: DV;
-  DV_filter: DV_filter;
+  ClusterCreated: ClusterCreated;
+  ClusterCreated_filter: ClusterCreated_filter;
   Float: Scalars['Float']['output'];
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
@@ -688,7 +713,7 @@ export type BidPlacedResolvers<ContextType = MeshContext, ParentType extends Res
   discountRate?: Resolver<ResolversTypes['BigDecimal'], ParentType, ContextType>;
   duration?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   bidPrice?: Resolver<ResolversTypes['BigDecimal'], ParentType, ContextType>;
-  uint256AuctionScore?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  auctionScore?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   timestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   txHash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   bidStatus?: Resolver<ResolversTypes['BidStatus'], ParentType, ContextType>;
@@ -707,11 +732,13 @@ export interface BytesScalarConfig extends GraphQLScalarTypeConfig<ResolversType
   name: 'Bytes';
 }
 
-export type DVResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['DV'] = ResolversParentTypes['DV']> = ResolversObject<{
+export type ClusterCreatedResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['ClusterCreated'] = ResolversParentTypes['ClusterCreated']> = ResolversObject<{
   id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
+  averageAuctionScore?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  splitAddress?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   timestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   txHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  winners?: Resolver<Array<ResolversTypes['BidPlaced']>, ParentType, ContextType, RequireFields<DVwinnersArgs, 'skip' | 'first'>>;
+  winners?: Resolver<Array<ResolversTypes['BidPlaced']>, ParentType, ContextType, RequireFields<ClusterCreatedwinnersArgs, 'skip' | 'first'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -722,9 +749,9 @@ export interface Int8ScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 export type NodeOperatorResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['NodeOperator'] = ResolversParentTypes['NodeOperator']> = ResolversObject<{
   id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
   nodeOpAddr?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  reputationScore?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  hasActiveBids?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  hasPendingBids?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   bids?: Resolver<Maybe<Array<ResolversTypes['BidPlaced']>>, ParentType, ContextType, RequireFields<NodeOperatorbidsArgs, 'skip' | 'first'>>;
+  clusters?: Resolver<Maybe<Array<ResolversTypes['ClusterCreated']>>, ParentType, ContextType, RequireFields<NodeOperatorclustersArgs, 'skip' | 'first'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -733,8 +760,8 @@ export type QueryResolvers<ContextType = MeshContext, ParentType extends Resolve
   nodeOperators?: Resolver<Array<ResolversTypes['NodeOperator']>, ParentType, ContextType, RequireFields<QuerynodeOperatorsArgs, 'skip' | 'first' | 'subgraphError'>>;
   bidPlaced?: Resolver<Maybe<ResolversTypes['BidPlaced']>, ParentType, ContextType, RequireFields<QuerybidPlacedArgs, 'id' | 'subgraphError'>>;
   bidPlaceds?: Resolver<Array<ResolversTypes['BidPlaced']>, ParentType, ContextType, RequireFields<QuerybidPlacedsArgs, 'skip' | 'first' | 'subgraphError'>>;
-  dv?: Resolver<Maybe<ResolversTypes['DV']>, ParentType, ContextType, RequireFields<QuerydvArgs, 'id' | 'subgraphError'>>;
-  dvs?: Resolver<Array<ResolversTypes['DV']>, ParentType, ContextType, RequireFields<QuerydvsArgs, 'skip' | 'first' | 'subgraphError'>>;
+  clusterCreated?: Resolver<Maybe<ResolversTypes['ClusterCreated']>, ParentType, ContextType, RequireFields<QueryclusterCreatedArgs, 'id' | 'subgraphError'>>;
+  clusterCreateds?: Resolver<Array<ResolversTypes['ClusterCreated']>, ParentType, ContextType, RequireFields<QueryclusterCreatedsArgs, 'skip' | 'first' | 'subgraphError'>>;
   _meta?: Resolver<Maybe<ResolversTypes['_Meta_']>, ParentType, ContextType, Partial<Query_metaArgs>>;
 }>;
 
@@ -743,8 +770,8 @@ export type SubscriptionResolvers<ContextType = MeshContext, ParentType extends 
   nodeOperators?: SubscriptionResolver<Array<ResolversTypes['NodeOperator']>, "nodeOperators", ParentType, ContextType, RequireFields<SubscriptionnodeOperatorsArgs, 'skip' | 'first' | 'subgraphError'>>;
   bidPlaced?: SubscriptionResolver<Maybe<ResolversTypes['BidPlaced']>, "bidPlaced", ParentType, ContextType, RequireFields<SubscriptionbidPlacedArgs, 'id' | 'subgraphError'>>;
   bidPlaceds?: SubscriptionResolver<Array<ResolversTypes['BidPlaced']>, "bidPlaceds", ParentType, ContextType, RequireFields<SubscriptionbidPlacedsArgs, 'skip' | 'first' | 'subgraphError'>>;
-  dv?: SubscriptionResolver<Maybe<ResolversTypes['DV']>, "dv", ParentType, ContextType, RequireFields<SubscriptiondvArgs, 'id' | 'subgraphError'>>;
-  dvs?: SubscriptionResolver<Array<ResolversTypes['DV']>, "dvs", ParentType, ContextType, RequireFields<SubscriptiondvsArgs, 'skip' | 'first' | 'subgraphError'>>;
+  clusterCreated?: SubscriptionResolver<Maybe<ResolversTypes['ClusterCreated']>, "clusterCreated", ParentType, ContextType, RequireFields<SubscriptionclusterCreatedArgs, 'id' | 'subgraphError'>>;
+  clusterCreateds?: SubscriptionResolver<Array<ResolversTypes['ClusterCreated']>, "clusterCreateds", ParentType, ContextType, RequireFields<SubscriptionclusterCreatedsArgs, 'skip' | 'first' | 'subgraphError'>>;
   _meta?: SubscriptionResolver<Maybe<ResolversTypes['_Meta_']>, "_meta", ParentType, ContextType, Partial<Subscription_metaArgs>>;
 }>;
 
@@ -772,7 +799,7 @@ export type Resolvers<ContextType = MeshContext> = ResolversObject<{
   BigDecimal?: GraphQLScalarType;
   BigInt?: GraphQLScalarType;
   Bytes?: GraphQLScalarType;
-  DV?: DVResolvers<ContextType>;
+  ClusterCreated?: ClusterCreatedResolvers<ContextType>;
   Int8?: GraphQLScalarType;
   NodeOperator?: NodeOperatorResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
@@ -796,9 +823,6 @@ const baseDir = pathModule.join(typeof __dirname === 'string' ? __dirname : '/',
 const importFn: ImportFn = <T>(moduleId: string) => {
   const relativeModuleId = (pathModule.isAbsolute(moduleId) ? pathModule.relative(baseDir, moduleId) : moduleId).split('\\').join('/').replace(baseDir + '/', '');
   switch(relativeModuleId) {
-    case ".graphclient/sources/Byzantine Holesky/introspectionSchema":
-      return Promise.resolve(importedModule$0) as T;
-    
     default:
       return Promise.reject(new Error(`Cannot find module '${relativeModuleId}'.`));
   }
@@ -813,90 +837,15 @@ const rootStore = new MeshStore('.graphclient', new FsStoreStorageAdapter({
   validate: false
 });
 
-export const rawServeConfig: YamlConfig.Config['serve'] = undefined as any
-export async function getMeshOptions(): Promise<GetMeshOptions> {
-const pubsub = new PubSub();
-const sourcesStore = rootStore.child('sources');
-const logger = new DefaultLogger("GraphClient");
-const cache = new (MeshCache as any)({
-      ...({} as any),
-      importFn,
-      store: rootStore.child('cache'),
-      pubsub,
-      logger,
-    } as any)
-
-const sources: MeshResolvedSource[] = [];
-const transforms: MeshTransform[] = [];
-const additionalEnvelopPlugins: MeshPlugin<any>[] = [];
-const byzantineHoleskyTransforms = [];
-const additionalTypeDefs = [] as any[];
-const byzantineHoleskyHandler = new GraphqlHandler({
-              name: "Byzantine Holesky",
-              config: {"endpoint":"https://api.studio.thegraph.com/query/77400/v5-auction-byzantine-holesky/version/latest"},
-              baseDir,
-              cache,
-              pubsub,
-              store: sourcesStore.child("Byzantine Holesky"),
-              logger: logger.child("Byzantine Holesky"),
-              importFn,
-            });
-sources[0] = {
-          name: 'Byzantine Holesky',
-          handler: byzantineHoleskyHandler,
-          transforms: byzantineHoleskyTransforms
-        }
-additionalEnvelopPlugins[0] = await UsePollingLive({
-          ...({
-  "defaultInterval": 1000
-}),
-          logger: logger.child("pollingLive"),
-          cache,
-          pubsub,
-          baseDir,
-          importFn,
-        })
-const additionalResolvers = [] as any[]
-const merger = new(BareMerger as any)({
-        cache,
-        pubsub,
-        logger: logger.child('bareMerger'),
-        store: rootStore.child('bareMerger')
-      })
-const documentHashMap = {
-        "35b58a58120028f9364e0c4d03e93bd913ef0991fe688d037f572aa8770d09bb": GetCreatedDVsDocument
-      }
-additionalEnvelopPlugins.push(usePersistedOperations({
-        getPersistedOperation(key) {
-          return documentHashMap[key];
-        },
-        ...{}
-      }))
-
-  return {
-    sources,
-    transforms,
-    additionalTypeDefs,
-    additionalResolvers,
-    cache,
-    pubsub,
-    merger,
-    logger,
-    additionalEnvelopPlugins,
-    get documents() {
-      return [
-      {
-        document: GetCreatedDVsDocument,
-        get rawSDL() {
-          return printWithCache(GetCreatedDVsDocument);
-        },
-        location: 'GetCreatedDVsDocument.graphql',
-        sha256Hash: '35b58a58120028f9364e0c4d03e93bd913ef0991fe688d037f572aa8770d09bb'
-      }
-    ];
-    },
-    fetchFn,
-  };
+export function getMeshOptions() {
+  console.warn('WARNING: These artifacts are built for development mode. Please run "graphclient build" to build production artifacts');
+  return findAndParseConfig({
+    dir: baseDir,
+    artifactsDir: ".graphclient",
+    configName: "graphclient",
+    additionalPackagePrefixes: ["@graphprotocol/client-"],
+    initialLoggerPrefix: "GraphClient",
+  });
 }
 
 export function createBuiltMeshHTTPHandler<TServerContext = {}>(): MeshHTTPHandler<TServerContext> {
@@ -906,7 +855,6 @@ export function createBuiltMeshHTTPHandler<TServerContext = {}>(): MeshHTTPHandl
     rawServeConfig: undefined,
   })
 }
-
 
 let meshInstance$: Promise<MeshInstance> | undefined;
 
@@ -949,10 +897,10 @@ export function getBuiltGraphSDK<TGlobalContext = any, TOperationContext = any>(
 export type GetCreatedDVsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCreatedDVsQuery = { dvs: Array<(
-    Pick<DV, 'timestamp' | 'txHash'>
+export type GetCreatedDVsQuery = { clusterCreateds: Array<(
+    Pick<ClusterCreated, 'id' | 'timestamp' | 'txHash' | 'splitAddress' | 'averageAuctionScore'>
     & { winners: Array<(
-      Pick<BidPlaced, 'duration' | 'discountRate' | 'bidPrice' | 'uint256AuctionScore' | 'bidStatus'>
+      Pick<BidPlaced, 'id' | 'duration' | 'discountRate' | 'bidPrice' | 'auctionScore' | 'bidStatus'>
       & { nodeOp: Pick<NodeOperator, 'nodeOpAddr'> }
     )> }
   )> };
@@ -960,17 +908,21 @@ export type GetCreatedDVsQuery = { dvs: Array<(
 
 export const GetCreatedDVsDocument = gql`
     query GetCreatedDVs @live(interval: 30000) {
-  dvs(orderBy: timestamp, orderDirection: desc) {
+  clusterCreateds(orderBy: timestamp, orderDirection: desc) {
+    id
     timestamp
     txHash
+    splitAddress
+    averageAuctionScore
     winners {
+      id
       nodeOp {
         nodeOpAddr
       }
       duration
       discountRate
       bidPrice
-      uint256AuctionScore
+      auctionScore
       bidStatus
     }
   }

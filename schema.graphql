@@ -1,25 +1,27 @@
 type NodeOperator @entity {
   id: Bytes! # nodeOpAddr as ID
   nodeOpAddr: String! # address
-  reputationScore: BigInt! # uint256
-  hasActiveBids: Boolean!
+  hasPendingBids: Boolean!
   bids: [BidPlaced!] @derivedFrom(field: "nodeOp")
+  clusters: [ClusterCreated!] 
 }
 
 type BidPlaced @entity {
-  id: Bytes!
+  id: Bytes! # bidId
   nodeOp: NodeOperator! # reference to NodeOperator
   discountRate: BigDecimal! # Scaled down to 1e2
   duration: BigInt! # uint256
   bidPrice: BigDecimal! # Converted bidPrice in Ether
-  uint256AuctionScore: BigInt! # uint256
+  auctionScore: BigInt! # uint256
   timestamp: BigInt!
   txHash: String # hash of the transaction
   bidStatus: BidStatus!
 }
 
-type DV @entity {
-  id: Bytes! # hash of the transaction
+type ClusterCreated @entity {
+  id: Bytes! # clusterId
+  averageAuctionScore: BigInt!
+  splitAddress: String!
   timestamp: BigInt!
   txHash: String!
   winners: [BidPlaced!]!
@@ -27,6 +29,6 @@ type DV @entity {
 
 enum BidStatus {
   Closed # bid withdrawn or already won
-  Pending # bid active
-  Active # winner in DV
+  Pending # bid waiting to join cluster
+  Active # winner joined cluster
 }

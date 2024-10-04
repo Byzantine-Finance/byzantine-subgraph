@@ -2,9 +2,10 @@ import {
   BidPlaced as BidPlacedEvent,
   BidUpdated as BidUpdatedEvent,
   BidWithdrawn as BidWithdrawnEvent,
-  WinnerJoinedDV as WinnerJoinedDVEvent,
+  WinnerJoinedCluster as WinnerJoinedClusterEvent,
+  ClusterCreated as ClusterCreatedEvent,
 } from "../generated/Auction/Auction";
-import { NodeOperator, BidPlaced, DV } from "../generated/schema";
+import { NodeOperator, BidPlaced, ClusterCreated } from "../generated/schema";
 import {
   ethereum,
   JSONValue,
@@ -19,199 +20,182 @@ import {
 } from "@graphprotocol/graph-ts";
 
 export function handleBidPlaced(event: BidPlacedEvent): void {
-  // Define the bidId for each bid placed by the node operator
-  let bidEntity = new BidPlaced(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  );
+  // Define the bidId using the bidId from the event
+  let bidEntity = new BidPlaced(event.params.bidId);
 
   // Load the NodeOperator entity using the nodeOpAddr from the event
-  let nodeOpId = event.params.nodeOpAddr.toHex();
-  let nodeOpIdBytes: Bytes = Bytes.fromHexString(nodeOpId);
-  let nodeOpEntity = NodeOperator.load(nodeOpIdBytes);
+  let nodeOpEntity = NodeOperator.load(event.params.nodeOpAddr);
 
   // If the NodeOperator entity doesn't exist, create a new one
   if (nodeOpEntity == null) {
-    nodeOpEntity = new NodeOperator(nodeOpIdBytes);
+    nodeOpEntity = new NodeOperator(event.params.nodeOpAddr);
     nodeOpEntity.nodeOpAddr = event.params.nodeOpAddr.toHex();
-    nodeOpEntity.reputationScore = event.params.reputationScore;
-    nodeOpEntity.hasActiveBids = true;
+    nodeOpEntity.hasPendingBids = true;
+    nodeOpEntity.clusters = [];
     nodeOpEntity.save();
   }
 
-  // Update the reputationScore for the NodeOperator entity
-  nodeOpEntity.reputationScore = event.params.reputationScore;
-  nodeOpEntity.save();
-
   // Set the fields for the BidPlaced entity
   bidEntity.nodeOp = nodeOpEntity.id; // Refer back to the NodeOperator entity
-  bidEntity.discountRate = scaleDown(event.params.discountRate, "100");
+  bidEntity.discountRate = scaleDown(
+    BigInt.fromI32(event.params.discountRate),
+    "100"
+  );
   bidEntity.duration = event.params.duration;
   bidEntity.bidPrice = scaleDown(event.params.bidPrice, "1000000000000000000");
-  bidEntity.uint256AuctionScore = event.params.auctionScore;
+  bidEntity.auctionScore = event.params.auctionScore;
   bidEntity.timestamp = event.block.timestamp;
   bidEntity.txHash = event.transaction.hash.toHex();
   bidEntity.bidStatus = "Pending";
-
   bidEntity.save();
 }
 
 export function handleBidUpdated(event: BidUpdatedEvent): void {
-  // Get the corresponding NodeOp ID
-  let nodeOpId = event.params.nodeOpAddr.toHex();
-  let nodeOpIdBytes: Bytes = Bytes.fromHexString(nodeOpId);
-  let nodeOpEntity = NodeOperator.load(nodeOpIdBytes);
-
-  // If the NodeOperator entity doesn't exist, log a warning
-  if (nodeOpEntity == null) {
-    log.warning("Node operator with ID {} not found", [nodeOpId]);
+  // Get the corresponding BidPlaced entity by the oldBidId
+  let bidEntity = BidPlaced.load(event.params.oldBidId);
+  if (bidEntity == null) {
+    log.warning("Bid with ID {} not found", [event.params.oldBidId.toHex()]);
     return;
   }
 
-  // Get the corresponding Bid ID
-  let bids = nodeOpEntity.bids.load();
-  for (let i = bids.length - 1; i >= 0; i--) {
-    let bid = bids[i];
-    let bidId = bid.id;
-
-    // If the Bid entity doesn't exist, log a warning
-    if (bid == null) {
-      log.warning("Bid with ID {} not found", [bidId.toString()]);
-      return;
-    } else {
-      // If the Bid entity exists, update the fields
-      if (
-        bid.uint256AuctionScore == event.params.oldAuctionScore &&
-        bid.bidStatus == "Pending"
-      ) {
-        bid.discountRate = scaleDown(event.params.newDiscountRate, "100");
-        bid.duration = event.params.newDuration;
-        bid.bidPrice = scaleDown(
-          event.params.newBidPrice,
-          "1000000000000000000"
-        );
-        bid.uint256AuctionScore = event.params.newAuctionScore;
-        bid.timestamp = event.block.timestamp;
-        bid.txHash = event.transaction.hash.toHex();
-        bid.save();
-        break; // Only update the last bid that matches the auctionScore
-      }
-    }
-  }
+  bidEntity.discountRate = scaleDown(
+    BigInt.fromI32(event.params.newDiscountRate),
+    "100"
+  );
+  bidEntity.duration = event.params.newDuration;
+  bidEntity.bidPrice = scaleDown(
+    event.params.newBidPrice,
+    "1000000000000000000"
+  );
+  bidEntity.auctionScore = event.params.newAuctionScore;
+  bidEntity.timestamp = event.block.timestamp;
+  bidEntity.txHash = event.transaction.hash.toHex();
+  bidEntity.id = event.transaction.hash.concatI32(
+    event.params.newBidId.toI32()
+  );
+  bidEntity.save();
 }
 
 export function handleBidWithdrawn(event: BidWithdrawnEvent): void {
-  // Get the corresponding NodeOp ID
-  let nodeOpId = event.params.nodeOpAddr.toHex();
-  let nodeOpIdBytes: Bytes = Bytes.fromHexString(nodeOpId);
-  let nodeOpEntity = NodeOperator.load(nodeOpIdBytes);
-
-  // If the NodeOperator entity doesn't exist, log a warning
-  if (nodeOpEntity == null) {
-    log.warning("Node operator with ID {} not found", [nodeOpId]);
+  // Get the corresponding BidPlaced entity by the bidId
+  let bidEntity = BidPlaced.load(event.params.bidId);
+  if (bidEntity == null) {
+    log.warning("Bid with ID {} not found", [event.params.bidId.toHex()]);
     return;
   }
 
-  // If the NodeOperator entity exists
-  // Iterate through all the bids of the NodeOperator
-  let bids = nodeOpEntity.bids.load();
-  for (let i = bids.length - 1; i >= 0; i--) {
-    let bid = bids[i];
-    let bidAuctionScore = bid.uint256AuctionScore;
-
-    // Find the bid that matches the auctionScore of the event and has a Pending status
-    if (
-      bidAuctionScore == event.params.auctionScore &&
-      bid.bidStatus == "Pending"
-    ) {
-      bid.bidStatus = "Closed";
-      bid.txHash = event.transaction.hash.toHex();
-      bid.timestamp = event.block.timestamp;
-      bid.save();
-      break; // Only "withdraw" the last bid in the array that matches the auctionScore
-    }
-  }
+  bidEntity.bidStatus = "Closed";
+  bidEntity.save();
 
   // Iteration to check if there are any active bids left in the NodeOperator entity
-  let hasActiveBids = false;
+  let nodeOpEntity = NodeOperator.load(event.params.nodeOpAddr);
+  if (nodeOpEntity == null) {
+    log.warning("Node operator with ID {} not found", [
+      event.params.nodeOpAddr.toHex(),
+    ]);
+    return;
+  }
+
+  let hasPendingBids = false;
   for (let i = 0; i < nodeOpEntity.bids.load().length; i++) {
     let bid = nodeOpEntity.bids.load()[i];
 
-    // If at least one bid is active, update the hasActiveBids variable to true and exit the loop
+    // If at least one bid is pending, update the hasPendingBids variable to true and exit the loop
     if (bid.bidStatus == "Pending") {
-      hasActiveBids = true;
+      hasPendingBids = true;
       break;
     }
   }
-  // Update the hasActiveBids field according to the variable hasActiveBids
-  nodeOpEntity.hasActiveBids = hasActiveBids;
+  // Update the hasPendingBids field according to the variable hasPendingBids
+  nodeOpEntity.hasPendingBids = hasPendingBids;
   nodeOpEntity.save();
 }
 
-export function handleWinnerJoinedDV(event: WinnerJoinedDVEvent): void {
-  // Get the corresponding NodeOp ID
-  let nodeOpId = event.params.nodeOpAddr.toHex();
-  let nodeOpIdBytes: Bytes = Bytes.fromHexString(nodeOpId);
-  let nodeOpEntity = NodeOperator.load(nodeOpIdBytes);
+export function handleWinnerJoinedCluster(
+  event: WinnerJoinedClusterEvent
+): void {
+  let clusterEntity = ClusterCreated.load(event.params.clusterJoined);
+  if (clusterEntity == null) {
+    clusterEntity = new ClusterCreated(event.params.clusterJoined);
+    clusterEntity.timestamp = event.block.timestamp;
+    clusterEntity.txHash = event.transaction.hash.toHex();
+    clusterEntity.winners = [];
+    clusterEntity.save();
+  }
 
-  // If the NodeOperator entity doesn't exist, log a warning
-  if (nodeOpEntity == null) {
-    log.warning("Node operator with ID {} not found", [nodeOpId]);
+  // Get the winner bids using bidId from event
+  let bidEntity = BidPlaced.load(event.params.winningBidId);
+  if (bidEntity == null) {
+    log.warning("Bid with ID {} not found", [
+      event.params.winningBidId.toHex(),
+    ]);
     return;
   }
 
-  // If the NodeOperator entity exists, iterate through all the bids of the NodeOperator
-  let bids = nodeOpEntity.bids.load();
-  for (let i = bids.length - 1; i >= 0; i--) {
-    let bid = bids[i];
-    let bidAuctionScore = bid.uint256AuctionScore;
+  // Update the status of the bid to "Active"
+  bidEntity.bidStatus = "Active";
+  bidEntity.txHash = event.transaction.hash.toHex();
+  bidEntity.timestamp = event.block.timestamp;
+  bidEntity.save();
 
-    // Find the bid that matches the auctionScore of the event and it is an active bid
-    if (
-      bidAuctionScore == event.params.auctionScore &&
-      bid.bidStatus == "Pending"
-    ) {
-      bid.bidStatus = "Active";
-      bid.txHash = event.transaction.hash.toHex();
-      bid.timestamp = event.block.timestamp;
-      bid.save();
+  // Push the BidPlaced entity to the list of winners
+  // @dev Need to re-assign to be able to use push!
+  let winners = clusterEntity.winners;
+  winners.push(bidEntity.id);
+  clusterEntity.winners = winners;
+  clusterEntity.save();
 
-      // Load the DV entity using the tx hash from the event
-      let dv = DV.load(event.transaction.hash);
+  // Load the NodeOperator entity using the nodeOpAddr from the event
+  let nodeOpEntity = NodeOperator.load(event.params.nodeOpAddr);
 
-      // If the DV entity doesn't exist, create a new one
-      if (dv == null) {
-        dv = new DV(event.transaction.hash);
-        dv.timestamp = event.block.timestamp;
-        dv.txHash = event.transaction.hash.toHex();
-        dv.winners = [];
-        dv.save();
-      }
-
-      // Push the BidPlaced entity to the list of winners
-      // @dev Need to re-assign to be able to use push!
-      let winners = dv.winners;
-      winners.push(bid.id);
-      dv.winners = winners;
-      dv.save();
-
-      break; // Only the last bid in the array that matches the auctionScore is the winner
-    }
+  // If the NodeOperator entity doesn't exist, create a new one
+  if (nodeOpEntity == null) {
+    log.warning("Node operator with ID {} not found", [
+      event.params.nodeOpAddr.toHex(),
+    ]);
+    return;
   }
 
+  // Push the ClusterCreated entity to the list of clusters in the NodeOperator entity
+  // @dev Need to re-assign to be able to use push!
+  let clusters = nodeOpEntity.clusters;
+  if (clusters == null) {
+    clusters = [];
+  }
+  clusters.push(clusterEntity.id);
+  nodeOpEntity.clusters = clusters;
+  nodeOpEntity.save();
+
   // Iteration to check if there are any active bids left in the NodeOperator entity
-  let hasActiveBids = false;
+  let hasPendingBids = false;
   for (let i = 0; i < nodeOpEntity.bids.load().length; i++) {
     let bid = nodeOpEntity.bids.load()[i];
 
-    // If at least one bid is active, update the hasActiveBids variable to true and exit the loop
+    // If at least one bid is pending, update the hasPendingBids variable to true and exit the loop
     if (bid.bidStatus == "Pending") {
-      hasActiveBids = true;
+      hasPendingBids = true;
       break;
     }
   }
-  // Update the hasActiveBids field according to the variable hasActiveBids
-  nodeOpEntity.hasActiveBids = hasActiveBids;
+  // Update the hasPendingBids field according to the variable hasPendingBids
+  nodeOpEntity.hasPendingBids = hasPendingBids;
   nodeOpEntity.save();
+}
+
+export function handleClusterCreated(event: ClusterCreatedEvent): void {
+  let clusterEntity = ClusterCreated.load(event.params.clusterId);
+  if (clusterEntity == null) {
+    clusterEntity = new ClusterCreated(event.params.clusterId);
+    clusterEntity.timestamp = event.block.timestamp;
+    clusterEntity.txHash = event.transaction.hash.toHex();
+    clusterEntity.winners = [];
+    clusterEntity.save();
+  }
+
+  clusterEntity.averageAuctionScore = event.params.averageAuctionScore;
+  clusterEntity.splitAddress = event.params.splitAddr.toHex();
+  clusterEntity.splitAddress = event.params.splitAddr.toHex();
+  clusterEntity.save();
 }
 
 /*******************HELPER FUNCTIONS*******************/

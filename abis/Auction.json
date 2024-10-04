@@ -211,6 +211,12 @@
         "internalType": "bytes32",
         "name": "clusterJoined",
         "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "winningBidId",
+        "type": "bytes32"
       }
     ],
     "name": "WinnerJoinedCluster",
