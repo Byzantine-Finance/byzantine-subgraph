@@ -8,9 +8,9 @@ dataSources:
     name: Auction
     network: holesky
     source:
-      address: "0xeCd7D94A8E90FdC41007f075d3B9AdAB5a64F2C7"
+      address: "0x9446C097dA289261B98386089dd62F260320d624"
       abi: Auction
-      startBlock: 2460512
+      startBlock: 2505328
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -19,26 +19,20 @@ dataSources:
         - BidPlaced
         - BidUpdated
         - BidWithdrawn
-        - ClusterCreated
-        - Initialized
-        - OwnershipTransferred
         - WinnerJoinedCluster
+        - ClusterCreated
       abis:
         - name: Auction
           file: ./abis/Auction.json
       eventHandlers:
-        - event: BidPlaced(indexed address,bytes32,uint16,uint32,uint256,uint256)
+        - event: BidPlaced(indexed address,bytes32,uint16,uint32,uint256,uint256,uint8)
           handler: handleBidPlaced
         - event: BidUpdated(indexed address,indexed bytes32,bytes32,uint16,uint32,uint256,uint256)
           handler: handleBidUpdated
         - event: BidWithdrawn(indexed address,indexed bytes32)
           handler: handleBidWithdrawn
+        - event: WinnerJoinedCluster(indexed address,indexed bytes32,bytes32)
+          handler: handleWinnerJoinedCluster
         - event: ClusterCreated(indexed bytes32,uint256,address)
           handler: handleClusterCreated
-        - event: Initialized(uint8)
-          handler: handleInitialized
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
-        - event: WinnerJoinedCluster(indexed address,indexed bytes32)
-          handler: handleWinnerJoinedCluster
       file: ./src/auction.ts

@@ -16,6 +16,7 @@ type BidPlaced @entity {
   timestamp: BigInt!
   txHash: String # hash of the transaction
   bidStatus: BidStatus!
+  auctionType: AuctionType!
 }
 
 type ClusterCreated @entity {
@@ -32,3 +33,9 @@ enum BidStatus {
   Pending # bid waiting to join cluster
   Active # winner joined cluster
 }
+
+enum AuctionType {
+  Null
+  ClusterSize4 
+  ClusterSize7
+} 

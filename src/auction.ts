@@ -47,6 +47,13 @@ export function handleBidPlaced(event: BidPlacedEvent): void {
   bidEntity.timestamp = event.block.timestamp;
   bidEntity.txHash = event.transaction.hash.toHex();
   bidEntity.bidStatus = "Pending";
+  if(event.params.auctionType == 1) {
+    bidEntity.auctionType = "ClusterSize4";
+  } else if (event.params.auctionType == 2) {
+    bidEntity.auctionType = "ClusterSize7";
+  } else {
+    bidEntity.auctionType = "Null";
+  }
   bidEntity.save();
 }
 
@@ -70,9 +77,6 @@ export function handleBidUpdated(event: BidUpdatedEvent): void {
   bidEntity.auctionScore = event.params.newAuctionScore;
   bidEntity.timestamp = event.block.timestamp;
   bidEntity.txHash = event.transaction.hash.toHex();
-  bidEntity.id = event.transaction.hash.concatI32(
-    event.params.newBidId.toI32()
-  );
   bidEntity.save();
 }
 
@@ -85,6 +89,8 @@ export function handleBidWithdrawn(event: BidWithdrawnEvent): void {
   }
 
   bidEntity.bidStatus = "Closed";
+  bidEntity.timestamp = event.block.timestamp;
+  bidEntity.txHash = event.transaction.hash.toHex();
   bidEntity.save();
 
   // Iteration to check if there are any active bids left in the NodeOperator entity

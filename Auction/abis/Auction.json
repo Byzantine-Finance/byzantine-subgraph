@@ -24,11 +24,13 @@
   { "inputs": [], "name": "DiscountRateTooHigh", "type": "error" },
   { "inputs": [], "name": "DurationTooShort", "type": "error" },
   { "inputs": [], "name": "EscrowTransferFailed", "type": "error" },
+  { "inputs": [], "name": "InvalidAuctionType", "type": "error" },
   { "inputs": [], "name": "MainAuctionEmpty", "type": "error" },
   { "inputs": [], "name": "NotEnoughEtherSent", "type": "error" },
   { "inputs": [], "name": "NotWhitelisted", "type": "error" },
   { "inputs": [], "name": "OnlyStratVaultETH", "type": "error" },
   { "inputs": [], "name": "RefundFailed", "type": "error" },
+  { "inputs": [], "name": "SenderNotBidder", "type": "error" },
   {
     "anonymous": false,
     "inputs": [
@@ -67,6 +69,12 @@
         "internalType": "uint256",
         "name": "auctionScore",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum IAuction.AuctionType",
+        "name": "auctionType",
+        "type": "uint8"
       }
     ],
     "name": "BidPlaced",
@@ -211,6 +219,12 @@
         "internalType": "bytes32",
         "name": "clusterJoined",
         "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "winningBidId",
+        "type": "bytes32"
       }
     ],
     "name": "WinnerJoinedCluster",
@@ -220,20 +234,6 @@
     "inputs": [],
     "name": "NODE_OP_SPLIT_ALLOCATION",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "NUM_VALIDATORS_CLUSTER_4",
-    "outputs": [{ "internalType": "uint8", "name": "", "type": "uint8" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "NUM_VALIDATORS_CLUSTER_7",
-    "outputs": [{ "internalType": "uint8", "name": "", "type": "uint8" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -254,9 +254,14 @@
   {
     "inputs": [
       { "internalType": "uint16", "name": "_discountRate", "type": "uint16" },
-      { "internalType": "uint32", "name": "_timeInDays", "type": "uint32" }
+      { "internalType": "uint32", "name": "_timeInDays", "type": "uint32" },
+      {
+        "internalType": "enum IAuction.AuctionType",
+        "name": "_auctionType",
+        "type": "uint8"
+      }
     ],
-    "name": "bidCluster4",
+    "name": "bid",
     "outputs": [
       { "internalType": "bytes32", "name": "bidId", "type": "bytes32" }
     ],
@@ -375,6 +380,40 @@
     "type": "function"
   },
   {
+    "inputs": [
+      { "internalType": "address", "name": "_nodeOpAddr", "type": "address" }
+    ],
+    "name": "getNodeOpDetails",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint32",
+            "name": "reputationScore",
+            "type": "uint32"
+          },
+          { "internalType": "uint16", "name": "numBonds", "type": "uint16" },
+          {
+            "internalType": "uint8",
+            "name": "numBidsCluster4",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "numBidsCluster7",
+            "type": "uint8"
+          },
+          { "internalType": "bool", "name": "isWhitelisted", "type": "bool" }
+        ],
+        "internalType": "struct IAuction.NodeOpGlobalDetails",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getNumDVInAuction",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
@@ -385,9 +424,30 @@
     "inputs": [
       { "internalType": "address", "name": "_nodeOpAddr", "type": "address" },
       { "internalType": "uint16", "name": "_discountRate", "type": "uint16" },
-      { "internalType": "uint32", "name": "_timeInDays", "type": "uint32" }
+      { "internalType": "uint32", "name": "_timeInDays", "type": "uint32" },
+      {
+        "internalType": "enum IAuction.AuctionType",
+        "name": "_auctionType",
+        "type": "uint8"
+      }
     ],
-    "name": "getPriceToPayCluster4",
+    "name": "getPriceToPay",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_nodeOpAddr", "type": "address" },
+      { "internalType": "bytes32", "name": "_bidId", "type": "bytes32" },
+      {
+        "internalType": "uint16",
+        "name": "_newDiscountRate",
+        "type": "uint16"
+      },
+      { "internalType": "uint32", "name": "_newTimeInDays", "type": "uint32" }
+    ],
+    "name": "getUpdateBidPrice",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
@@ -521,6 +581,23 @@
   },
   {
     "inputs": [
+      { "internalType": "bytes32", "name": "_bidId", "type": "bytes32" },
+      {
+        "internalType": "uint16",
+        "name": "_newDiscountRate",
+        "type": "uint16"
+      },
+      { "internalType": "uint32", "name": "_newTimeInDays", "type": "uint32" }
+    ],
+    "name": "updateBid",
+    "outputs": [
+      { "internalType": "bytes32", "name": "newBidId", "type": "bytes32" }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       { "internalType": "bytes32", "name": "_clusterId", "type": "bytes32" },
       {
         "internalType": "enum IAuction.ClusterStatus",
@@ -577,6 +654,15 @@
       }
     ],
     "name": "whitelistNodeOps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "_bidId", "type": "bytes32" }
+    ],
+    "name": "withdrawBid",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
