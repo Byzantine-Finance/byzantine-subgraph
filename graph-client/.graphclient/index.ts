@@ -39,6 +39,11 @@ export type Aggregation_interval =
   | 'hour'
   | 'day';
 
+export type AuctionType =
+  | 'Null'
+  | 'ClusterSize4'
+  | 'ClusterSize7';
+
 export type BidPlaced = {
   id: Scalars['Bytes']['output'];
   nodeOp: NodeOperator;
@@ -49,6 +54,7 @@ export type BidPlaced = {
   timestamp: Scalars['BigInt']['output'];
   txHash?: Maybe<Scalars['String']['output']>;
   bidStatus: BidStatus;
+  auctionType: AuctionType;
 };
 
 export type BidPlaced_filter = {
@@ -147,6 +153,10 @@ export type BidPlaced_filter = {
   bidStatus_not?: InputMaybe<BidStatus>;
   bidStatus_in?: InputMaybe<Array<BidStatus>>;
   bidStatus_not_in?: InputMaybe<Array<BidStatus>>;
+  auctionType?: InputMaybe<AuctionType>;
+  auctionType_not?: InputMaybe<AuctionType>;
+  auctionType_in?: InputMaybe<Array<AuctionType>>;
+  auctionType_not_in?: InputMaybe<Array<AuctionType>>;
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
   and?: InputMaybe<Array<InputMaybe<BidPlaced_filter>>>;
@@ -165,7 +175,8 @@ export type BidPlaced_orderBy =
   | 'auctionScore'
   | 'timestamp'
   | 'txHash'
-  | 'bidStatus';
+  | 'bidStatus'
+  | 'auctionType';
 
 export type BidStatus =
   | 'Closed'
@@ -635,6 +646,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
   Aggregation_interval: Aggregation_interval;
+  AuctionType: AuctionType;
   BidPlaced: ResolverTypeWrapper<BidPlaced>;
   BidPlaced_filter: BidPlaced_filter;
   BidPlaced_orderBy: BidPlaced_orderBy;
@@ -717,6 +729,7 @@ export type BidPlacedResolvers<ContextType = MeshContext, ParentType extends Res
   timestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   txHash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   bidStatus?: Resolver<ResolversTypes['BidStatus'], ParentType, ContextType>;
+  auctionType?: Resolver<ResolversTypes['AuctionType'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -900,7 +913,7 @@ export type GetCreatedDVsQueryVariables = Exact<{ [key: string]: never; }>;
 export type GetCreatedDVsQuery = { clusterCreateds: Array<(
     Pick<ClusterCreated, 'id' | 'timestamp' | 'txHash' | 'splitAddress' | 'averageAuctionScore'>
     & { winners: Array<(
-      Pick<BidPlaced, 'id' | 'duration' | 'discountRate' | 'bidPrice' | 'auctionScore' | 'bidStatus'>
+      Pick<BidPlaced, 'id' | 'duration' | 'discountRate' | 'bidPrice' | 'auctionScore' | 'auctionType' | 'bidStatus'>
       & { nodeOp: Pick<NodeOperator, 'nodeOpAddr'> }
     )> }
   )> };
@@ -923,6 +936,7 @@ export const GetCreatedDVsDocument = gql`
       discountRate
       bidPrice
       auctionScore
+      auctionType
       bidStatus
     }
   }

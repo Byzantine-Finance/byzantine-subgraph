@@ -1,3 +1,3 @@
 {
-  "af49e879b88b5b23da1878ee53ff538cef659f0a9e8a48d22a72c094c0782963": "query GetCreatedDVs @live(interval: 30000) {\n  clusterCreateds(orderBy: timestamp, orderDirection: desc) {\n    id\n    timestamp\n    txHash\n    splitAddress\n    averageAuctionScore\n    winners {\n      id\n      nodeOp {\n        nodeOpAddr\n      }\n      duration\n      discountRate\n      bidPrice\n      auctionScore\n      bidStatus\n    }\n  }\n}"
+  "a1d2648424e506fa9c7a1935391e680e3bb44d4bac37e25419fcb824e277da7f": "query GetCreatedDVs @live(interval: 30000) {\n  clusterCreateds(orderBy: timestamp, orderDirection: desc) {\n    id\n    timestamp\n    txHash\n    splitAddress\n    averageAuctionScore\n    winners {\n      id\n      nodeOp {\n        nodeOpAddr\n      }\n      duration\n      discountRate\n      bidPrice\n      auctionScore\n      auctionType\n      bidStatus\n    }\n  }\n}"
 }

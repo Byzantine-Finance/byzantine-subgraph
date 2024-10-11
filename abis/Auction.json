@@ -15,6 +15,11 @@
         "internalType": "contract PushSplitFactory",
         "name": "_pushSplitFactory",
         "type": "address"
+      },
+      {
+        "internalType": "contract IStakerRewards",
+        "name": "_stakerRewards",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -28,6 +33,7 @@
   { "inputs": [], "name": "MainAuctionEmpty", "type": "error" },
   { "inputs": [], "name": "NotEnoughEtherSent", "type": "error" },
   { "inputs": [], "name": "NotWhitelisted", "type": "error" },
+  { "inputs": [], "name": "OnlyStakerRewards", "type": "error" },
   { "inputs": [], "name": "OnlyStratVaultETH", "type": "error" },
   { "inputs": [], "name": "RefundFailed", "type": "error" },
   { "inputs": [], "name": "SenderNotBidder", "type": "error" },
@@ -92,13 +98,7 @@
       {
         "indexed": true,
         "internalType": "bytes32",
-        "name": "oldBidId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "newBidId",
+        "name": "bidId",
         "type": "bytes32"
       },
       {
@@ -552,6 +552,19 @@
   },
   {
     "inputs": [],
+    "name": "stakerRewards",
+    "outputs": [
+      {
+        "internalType": "contract IStakerRewards",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "strategyVaultManager",
     "outputs": [
       {
@@ -590,9 +603,7 @@
       { "internalType": "uint32", "name": "_newTimeInDays", "type": "uint32" }
     ],
     "name": "updateBid",
-    "outputs": [
-      { "internalType": "bytes32", "name": "newBidId", "type": "bytes32" }
-    ],
+    "outputs": [],
     "stateMutability": "payable",
     "type": "function"
   },
@@ -641,6 +652,16 @@
       { "internalType": "uint32", "name": "_newMinDuration", "type": "uint32" }
     ],
     "name": "updateMinDuration",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "_clusterId", "type": "bytes32" },
+      { "internalType": "uint32", "name": "_consumedVCs", "type": "uint32" }
+    ],
+    "name": "updateNodeVCNumber",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

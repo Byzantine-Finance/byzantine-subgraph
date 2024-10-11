@@ -21,6 +21,12 @@ enum Aggregation_interval {
   day
 }
 
+enum AuctionType {
+  Null
+  ClusterSize4
+  ClusterSize7
+}
+
 type BidPlaced {
   id: Bytes!
   nodeOp: NodeOperator!
@@ -31,6 +37,7 @@ type BidPlaced {
   timestamp: BigInt!
   txHash: String
   bidStatus: BidStatus!
+  auctionType: AuctionType!
 }
 
 input BidPlaced_filter {
@@ -129,6 +136,10 @@ input BidPlaced_filter {
   bidStatus_not: BidStatus
   bidStatus_in: [BidStatus!]
   bidStatus_not_in: [BidStatus!]
+  auctionType: AuctionType
+  auctionType_not: AuctionType
+  auctionType_in: [AuctionType!]
+  auctionType_not_in: [AuctionType!]
   """Filter for the block changed event."""
   _change_block: BlockChangedFilter
   and: [BidPlaced_filter]
@@ -148,6 +159,7 @@ enum BidPlaced_orderBy {
   timestamp
   txHash
   bidStatus
+  auctionType
 }
 
 enum BidStatus {

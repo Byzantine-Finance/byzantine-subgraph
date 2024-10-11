@@ -58,10 +58,10 @@ export function handleBidPlaced(event: BidPlacedEvent): void {
 }
 
 export function handleBidUpdated(event: BidUpdatedEvent): void {
-  // Get the corresponding BidPlaced entity by the oldBidId
-  let bidEntity = BidPlaced.load(event.params.oldBidId);
+  // Get the corresponding BidPlaced entity by the bidId
+  let bidEntity = BidPlaced.load(event.params.bidId);
   if (bidEntity == null) {
-    log.warning("Bid with ID {} not found", [event.params.oldBidId.toHex()]);
+    log.warning("Bid with ID {} not found", [event.params.bidId.toHex()]);
     return;
   }
 
