@@ -123,8 +123,6 @@ export function handleWinnerJoinedCluster(
   let clusterEntity = ClusterCreated.load(event.params.clusterJoined);
   if (clusterEntity == null) {
     clusterEntity = new ClusterCreated(event.params.clusterJoined);
-    clusterEntity.timestamp = event.block.timestamp;
-    clusterEntity.txHash = event.transaction.hash.toHex();
     clusterEntity.winners = [];
     clusterEntity.save();
   }
@@ -191,16 +189,14 @@ export function handleWinnerJoinedCluster(
 export function handleClusterCreated(event: ClusterCreatedEvent): void {
   let clusterEntity = ClusterCreated.load(event.params.clusterId);
   if (clusterEntity == null) {
-    clusterEntity = new ClusterCreated(event.params.clusterId);
-    clusterEntity.timestamp = event.block.timestamp;
-    clusterEntity.txHash = event.transaction.hash.toHex();
-    clusterEntity.winners = [];
-    clusterEntity.save();
+    log.warning("Cluster with ID {} not found", [event.params.clusterId.toHex()]);
+    return;
   }
 
   clusterEntity.averageAuctionScore = event.params.averageAuctionScore;
   clusterEntity.splitAddress = event.params.splitAddr.toHex();
-  clusterEntity.splitAddress = event.params.splitAddr.toHex();
+  clusterEntity.timestamp = event.block.timestamp;
+  clusterEntity.txHash = event.transaction.hash.toHex();
   clusterEntity.save();
 }
 
