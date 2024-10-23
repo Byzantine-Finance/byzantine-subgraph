@@ -36,3 +36,24 @@ dataSources:
         - event: ClusterCreated(indexed bytes32,uint256,address)
           handler: handleClusterCreated
       file: ./src/auction.ts
+  - kind: ethereum
+    name: StrategyVaultManager
+    network: holesky
+    source:
+      address: "0x7027CfbB4E295288c7346c04C577f03aA9a1e5a4"
+      abi: StrategyVaultManager
+      startBlock: 2510892
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - EigenLayerNativeVaultCreated
+      abis:
+        - name: StrategyVaultManager
+          file: ./abis/StrategyVaultManager.json
+      eventHandlers:
+        - event: EigenLayerNativeVaultCreated(indexed address,indexed
+            address,address,address,bool,bool)
+          handler: handleEigenLayerNativeVaultCreated
+      file: ./src/strategy-vault-manager.ts

@@ -38,4 +38,32 @@ enum AuctionType {
   Null
   ClusterSize4 
   ClusterSize7
-} 
+} type EigenLayerNativeVaultCreated @entity(immutable: true) {
+  id: Bytes!
+  vaultAddr: Bytes! # address
+  eigenLayerStrat: Bytes! # address
+  vaultCreator: Bytes! # address
+  byzantineOracle: Bytes! # address
+  privateVault: Boolean! # bool
+  stratUpgradeable: Boolean! # bool
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Initialized @entity(immutable: true) {
+  id: Bytes!
+  version: Int! # uint8
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OwnershipTransferred @entity(immutable: true) {
+  id: Bytes!
+  previousOwner: Bytes! # address
+  newOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
