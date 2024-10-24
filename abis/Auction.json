@@ -168,6 +168,37 @@
         "internalType": "address",
         "name": "splitAddr",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "eigenPodAddr",
+        "type": "address"
+      }
+    ],
+    "name": "ClusterCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "clusterId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "averageAuctionScore",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "splitAddr",
+        "type": "address"
       }
     ],
     "name": "ClusterCreated",

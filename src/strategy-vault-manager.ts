@@ -1,59 +1,23 @@
 import {
-  EigenLayerNativeVaultCreated as EigenLayerNativeVaultCreatedEvent,
-  Initialized as InitializedEvent,
-  OwnershipTransferred as OwnershipTransferredEvent,
+  EigenLayerNativeVaultCreated as EigenLayerNativeVaultCreatedEvent
 } from "../generated/StrategyVaultManager/StrategyVaultManager"
 import {
-  EigenLayerNativeVaultCreated,
-  Initialized,
-  OwnershipTransferred,
+  VaultCreated
 } from "../generated/schema"
 
 export function handleEigenLayerNativeVaultCreated(
   event: EigenLayerNativeVaultCreatedEvent,
 ): void {
-  let entity = new EigenLayerNativeVaultCreated(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
-  )
-  entity.vaultAddr = event.params.vaultAddr
-  entity.eigenLayerStrat = event.params.eigenLayerStrat
-  entity.vaultCreator = event.params.vaultCreator
-  entity.byzantineOracle = event.params.byzantineOracle
-  entity.privateVault = event.params.privateVault
-  entity.stratUpgradeable = event.params.stratUpgradeable
+  let vaultEntity = new VaultCreated(event.params.vaultAddr);
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleInitialized(event: InitializedEvent): void {
-  let entity = new Initialized(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
-  )
-  entity.version = event.params.version
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleOwnershipTransferred(
-  event: OwnershipTransferredEvent,
-): void {
-  let entity = new OwnershipTransferred(
-    event.transaction.hash.concatI32(event.logIndex.toI32()),
-  )
-  entity.previousOwner = event.params.previousOwner
-  entity.newOwner = event.params.newOwner
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
+  vaultEntity.protocol = "EigenLayer";
+  vaultEntity.type = "Native";
+  vaultEntity.operator = event.params.eigenLayerStrat.toHex();
+  vaultEntity.creator = event.params.vaultCreator.toHex();
+  vaultEntity.oracle = event.params.byzantineOracle.toHex();
+  vaultEntity.whitelistedDeposit = event.params.privateVault;
+  vaultEntity.upgradeable = event.params.stratUpgradeable;
+  vaultEntity.timestamp = event.block.timestamp;
+  vaultEntity.txHash = event.transaction.hash.toHex();
+  vaultEntity.save()
 }

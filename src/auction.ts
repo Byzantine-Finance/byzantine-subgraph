@@ -4,6 +4,7 @@ import {
   BidWithdrawn as BidWithdrawnEvent,
   WinnerJoinedCluster as WinnerJoinedClusterEvent,
   ClusterCreated as ClusterCreatedEvent,
+  ClusterCreated1 as ClusterCreatedLegacyEvent,
 } from "../generated/Auction/Auction";
 import { NodeOperator, BidPlaced, ClusterCreated } from "../generated/schema";
 import {
@@ -195,6 +196,24 @@ export function handleClusterCreated(event: ClusterCreatedEvent): void {
 
   clusterEntity.averageAuctionScore = event.params.averageAuctionScore;
   clusterEntity.splitAddress = event.params.splitAddr.toHex();
+  // Only exists on the updated event
+  clusterEntity.eigenPodAddr = event.params.eigenPodAddr.toHex();
+  clusterEntity.timestamp = event.block.timestamp;
+  clusterEntity.txHash = event.transaction.hash.toHex();
+  clusterEntity.save();
+}
+
+// Function specifically to handle the legacy ClusterCreated event (without eigenPodAddr)
+export function handleClusterCreatedLegacy(event: ClusterCreatedLegacyEvent): void {
+  let clusterEntity = ClusterCreated.load(event.params.clusterId);
+  if (clusterEntity == null) {
+    log.warning("Cluster with ID {} not found", [event.params.clusterId.toHex()]);
+    return;
+  }
+
+  clusterEntity.averageAuctionScore = event.params.averageAuctionScore;
+  clusterEntity.splitAddress = event.params.splitAddr.toHex();
+  clusterEntity.eigenPodAddr = "0x21E2a892DDc9BD3c0466299172F8b1D8026925ED";
   clusterEntity.timestamp = event.block.timestamp;
   clusterEntity.txHash = event.transaction.hash.toHex();
   clusterEntity.save();
