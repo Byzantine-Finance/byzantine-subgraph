@@ -5,6 +5,7 @@ sources:
         endpoint: https://api.studio.thegraph.com/query/77400/v5-auction-byzantine-holesky/version/latest
 documents:
   - ./graphql/GetCreatedDVs.gql
+  - ./graphql/GetVaults.gql
 plugins:
   - pollingLive:
       defaultInterval: 1000

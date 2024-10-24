@@ -1,9 +1,10 @@
-query GetCreatedDVs @live(interval: 30000) {
+query GetCreatedDVs @live(interval: 12000) {
   clusterCreateds(orderBy: timestamp, orderDirection: desc) {
     id
     timestamp
     txHash
     splitAddress
+    eigenPodAddr
     averageAuctionScore
     winners {
       id

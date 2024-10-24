@@ -3,13 +3,27 @@ import { GraphQLResolveInfo, SelectionSetNode, FieldNode, GraphQLScalarType, Gra
 import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 import { gql } from '@graphql-mesh/utils';
 
-import { findAndParseConfig } from '@graphql-mesh/cli';
+import type { GetMeshOptions } from '@graphql-mesh/runtime';
+import type { YamlConfig } from '@graphql-mesh/types';
+import { PubSub } from '@graphql-mesh/utils';
+import { DefaultLogger } from '@graphql-mesh/utils';
+import MeshCache from "@graphql-mesh/cache-localforage";
+import { fetch as fetchFn } from '@whatwg-node/fetch';
+
+import { MeshResolvedSource } from '@graphql-mesh/runtime';
+import { MeshTransform, MeshPlugin } from '@graphql-mesh/types';
+import GraphqlHandler from "@graphql-mesh/graphql"
+import UsePollingLive from "@graphprotocol/client-polling-live";
+import BareMerger from "@graphql-mesh/merger-bare";
+import { printWithCache } from '@graphql-mesh/utils';
+import { usePersistedOperations } from '@graphql-yoga/plugin-persisted-operations';
 import { createMeshHTTPHandler, MeshHTTPHandler } from '@graphql-mesh/http';
 import { getMesh, ExecuteMeshFn, SubscribeMeshFn, MeshContext as BaseMeshContext, MeshInstance } from '@graphql-mesh/runtime';
 import { MeshStore, FsStoreStorageAdapter } from '@graphql-mesh/store';
 import { path as pathModule } from '@graphql-mesh/cross-helpers';
 import { ImportFn } from '@graphql-mesh/types';
 import type { ByzantineHoleskyTypes } from './sources/Byzantine Holesky/types';
+import * as importedModule$0 from "./sources/Byzantine Holesky/introspectionSchema";
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -195,10 +209,11 @@ export type Block_height = {
 
 export type ClusterCreated = {
   id: Scalars['Bytes']['output'];
-  averageAuctionScore: Scalars['BigInt']['output'];
-  splitAddress: Scalars['String']['output'];
-  timestamp: Scalars['BigInt']['output'];
-  txHash: Scalars['String']['output'];
+  averageAuctionScore?: Maybe<Scalars['BigInt']['output']>;
+  splitAddress?: Maybe<Scalars['String']['output']>;
+  eigenPodAddr?: Maybe<Scalars['String']['output']>;
+  timestamp?: Maybe<Scalars['BigInt']['output']>;
+  txHash?: Maybe<Scalars['String']['output']>;
   winners: Array<BidPlaced>;
 };
 
@@ -250,6 +265,26 @@ export type ClusterCreated_filter = {
   splitAddress_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
   splitAddress_not_ends_with?: InputMaybe<Scalars['String']['input']>;
   splitAddress_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_not?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_gt?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_lt?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_gte?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_lte?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  eigenPodAddr_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  eigenPodAddr_contains?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_not_contains?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_starts_with?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_ends_with?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
   timestamp?: InputMaybe<Scalars['BigInt']['input']>;
   timestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
   timestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
@@ -295,6 +330,7 @@ export type ClusterCreated_orderBy =
   | 'id'
   | 'averageAuctionScore'
   | 'splitAddress'
+  | 'eigenPodAddr'
   | 'timestamp'
   | 'txHash'
   | 'winners';
@@ -393,6 +429,8 @@ export type Query = {
   bidPlaceds: Array<BidPlaced>;
   clusterCreated?: Maybe<ClusterCreated>;
   clusterCreateds: Array<ClusterCreated>;
+  vaultCreated?: Maybe<VaultCreated>;
+  vaultCreateds: Array<VaultCreated>;
   /** Access to subgraph metadata */
   _meta?: Maybe<_Meta_>;
 };
@@ -452,6 +490,24 @@ export type QueryclusterCreatedsArgs = {
 };
 
 
+export type QueryvaultCreatedArgs = {
+  id: Scalars['ID']['input'];
+  block?: InputMaybe<Block_height>;
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+
+export type QueryvaultCreatedsArgs = {
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<VaultCreated_orderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  where?: InputMaybe<VaultCreated_filter>;
+  block?: InputMaybe<Block_height>;
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+
 export type Query_metaArgs = {
   block?: InputMaybe<Block_height>;
 };
@@ -463,6 +519,8 @@ export type Subscription = {
   bidPlaceds: Array<BidPlaced>;
   clusterCreated?: Maybe<ClusterCreated>;
   clusterCreateds: Array<ClusterCreated>;
+  vaultCreated?: Maybe<VaultCreated>;
+  vaultCreateds: Array<VaultCreated>;
   /** Access to subgraph metadata */
   _meta?: Maybe<_Meta_>;
 };
@@ -522,9 +580,182 @@ export type SubscriptionclusterCreatedsArgs = {
 };
 
 
+export type SubscriptionvaultCreatedArgs = {
+  id: Scalars['ID']['input'];
+  block?: InputMaybe<Block_height>;
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+
+export type SubscriptionvaultCreatedsArgs = {
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<VaultCreated_orderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  where?: InputMaybe<VaultCreated_filter>;
+  block?: InputMaybe<Block_height>;
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+
 export type Subscription_metaArgs = {
   block?: InputMaybe<Block_height>;
 };
+
+export type VaultCreated = {
+  id: Scalars['Bytes']['output'];
+  protocol: VaultProtocol;
+  type: VaultType;
+  operator: Scalars['String']['output'];
+  creator: Scalars['String']['output'];
+  oracle: Scalars['String']['output'];
+  whitelistedDeposit: Scalars['Boolean']['output'];
+  upgradeable: Scalars['Boolean']['output'];
+  timestamp: Scalars['BigInt']['output'];
+  txHash: Scalars['String']['output'];
+};
+
+export type VaultCreated_filter = {
+  id?: InputMaybe<Scalars['Bytes']['input']>;
+  id_not?: InputMaybe<Scalars['Bytes']['input']>;
+  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
+  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
+  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
+  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
+  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
+  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
+  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
+  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
+  protocol?: InputMaybe<VaultProtocol>;
+  protocol_not?: InputMaybe<VaultProtocol>;
+  protocol_in?: InputMaybe<Array<VaultProtocol>>;
+  protocol_not_in?: InputMaybe<Array<VaultProtocol>>;
+  type?: InputMaybe<VaultType>;
+  type_not?: InputMaybe<VaultType>;
+  type_in?: InputMaybe<Array<VaultType>>;
+  type_not_in?: InputMaybe<Array<VaultType>>;
+  operator?: InputMaybe<Scalars['String']['input']>;
+  operator_not?: InputMaybe<Scalars['String']['input']>;
+  operator_gt?: InputMaybe<Scalars['String']['input']>;
+  operator_lt?: InputMaybe<Scalars['String']['input']>;
+  operator_gte?: InputMaybe<Scalars['String']['input']>;
+  operator_lte?: InputMaybe<Scalars['String']['input']>;
+  operator_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  operator_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  operator_contains?: InputMaybe<Scalars['String']['input']>;
+  operator_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  operator_not_contains?: InputMaybe<Scalars['String']['input']>;
+  operator_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  operator_starts_with?: InputMaybe<Scalars['String']['input']>;
+  operator_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  operator_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  operator_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  operator_ends_with?: InputMaybe<Scalars['String']['input']>;
+  operator_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  operator_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  operator_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  creator?: InputMaybe<Scalars['String']['input']>;
+  creator_not?: InputMaybe<Scalars['String']['input']>;
+  creator_gt?: InputMaybe<Scalars['String']['input']>;
+  creator_lt?: InputMaybe<Scalars['String']['input']>;
+  creator_gte?: InputMaybe<Scalars['String']['input']>;
+  creator_lte?: InputMaybe<Scalars['String']['input']>;
+  creator_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  creator_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  creator_contains?: InputMaybe<Scalars['String']['input']>;
+  creator_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  creator_not_contains?: InputMaybe<Scalars['String']['input']>;
+  creator_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  creator_starts_with?: InputMaybe<Scalars['String']['input']>;
+  creator_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  creator_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  creator_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  creator_ends_with?: InputMaybe<Scalars['String']['input']>;
+  creator_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  creator_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  creator_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  oracle?: InputMaybe<Scalars['String']['input']>;
+  oracle_not?: InputMaybe<Scalars['String']['input']>;
+  oracle_gt?: InputMaybe<Scalars['String']['input']>;
+  oracle_lt?: InputMaybe<Scalars['String']['input']>;
+  oracle_gte?: InputMaybe<Scalars['String']['input']>;
+  oracle_lte?: InputMaybe<Scalars['String']['input']>;
+  oracle_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  oracle_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  oracle_contains?: InputMaybe<Scalars['String']['input']>;
+  oracle_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  oracle_not_contains?: InputMaybe<Scalars['String']['input']>;
+  oracle_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  oracle_starts_with?: InputMaybe<Scalars['String']['input']>;
+  oracle_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  oracle_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  oracle_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  oracle_ends_with?: InputMaybe<Scalars['String']['input']>;
+  oracle_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  oracle_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  oracle_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  whitelistedDeposit?: InputMaybe<Scalars['Boolean']['input']>;
+  whitelistedDeposit_not?: InputMaybe<Scalars['Boolean']['input']>;
+  whitelistedDeposit_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  whitelistedDeposit_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  upgradeable?: InputMaybe<Scalars['Boolean']['input']>;
+  upgradeable_not?: InputMaybe<Scalars['Boolean']['input']>;
+  upgradeable_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  upgradeable_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  timestamp?: InputMaybe<Scalars['BigInt']['input']>;
+  timestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
+  timestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  timestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  timestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  timestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  timestamp_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  timestamp_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  txHash?: InputMaybe<Scalars['String']['input']>;
+  txHash_not?: InputMaybe<Scalars['String']['input']>;
+  txHash_gt?: InputMaybe<Scalars['String']['input']>;
+  txHash_lt?: InputMaybe<Scalars['String']['input']>;
+  txHash_gte?: InputMaybe<Scalars['String']['input']>;
+  txHash_lte?: InputMaybe<Scalars['String']['input']>;
+  txHash_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  txHash_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  txHash_contains?: InputMaybe<Scalars['String']['input']>;
+  txHash_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  txHash_not_contains?: InputMaybe<Scalars['String']['input']>;
+  txHash_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  txHash_starts_with?: InputMaybe<Scalars['String']['input']>;
+  txHash_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  txHash_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  txHash_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  txHash_ends_with?: InputMaybe<Scalars['String']['input']>;
+  txHash_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  txHash_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  txHash_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  /** Filter for the block changed event. */
+  _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<VaultCreated_filter>>>;
+  or?: InputMaybe<Array<InputMaybe<VaultCreated_filter>>>;
+};
+
+export type VaultCreated_orderBy =
+  | 'id'
+  | 'protocol'
+  | 'type'
+  | 'operator'
+  | 'creator'
+  | 'oracle'
+  | 'whitelistedDeposit'
+  | 'upgradeable'
+  | 'timestamp'
+  | 'txHash';
+
+export type VaultProtocol =
+  | 'EigenLayer'
+  | 'Symbiotic'
+  | 'Babylon';
+
+export type VaultType =
+  | 'Native'
+  | 'Liquid';
 
 export type _Block_ = {
   /** The hash of the block */
@@ -672,6 +903,11 @@ export type ResolversTypes = ResolversObject<{
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   Subscription: ResolverTypeWrapper<{}>;
   Timestamp: ResolverTypeWrapper<Scalars['Timestamp']['output']>;
+  VaultCreated: ResolverTypeWrapper<VaultCreated>;
+  VaultCreated_filter: VaultCreated_filter;
+  VaultCreated_orderBy: VaultCreated_orderBy;
+  VaultProtocol: VaultProtocol;
+  VaultType: VaultType;
   _Block_: ResolverTypeWrapper<_Block_>;
   _Meta_: ResolverTypeWrapper<_Meta_>;
   _SubgraphErrorPolicy_: _SubgraphErrorPolicy_;
@@ -699,6 +935,8 @@ export type ResolversParentTypes = ResolversObject<{
   String: Scalars['String']['output'];
   Subscription: {};
   Timestamp: Scalars['Timestamp']['output'];
+  VaultCreated: VaultCreated;
+  VaultCreated_filter: VaultCreated_filter;
   _Block_: _Block_;
   _Meta_: _Meta_;
 }>;
@@ -747,10 +985,11 @@ export interface BytesScalarConfig extends GraphQLScalarTypeConfig<ResolversType
 
 export type ClusterCreatedResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['ClusterCreated'] = ResolversParentTypes['ClusterCreated']> = ResolversObject<{
   id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  averageAuctionScore?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  splitAddress?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  timestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  txHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  averageAuctionScore?: Resolver<Maybe<ResolversTypes['BigInt']>, ParentType, ContextType>;
+  splitAddress?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  eigenPodAddr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  timestamp?: Resolver<Maybe<ResolversTypes['BigInt']>, ParentType, ContextType>;
+  txHash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   winners?: Resolver<Array<ResolversTypes['BidPlaced']>, ParentType, ContextType, RequireFields<ClusterCreatedwinnersArgs, 'skip' | 'first'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -775,6 +1014,8 @@ export type QueryResolvers<ContextType = MeshContext, ParentType extends Resolve
   bidPlaceds?: Resolver<Array<ResolversTypes['BidPlaced']>, ParentType, ContextType, RequireFields<QuerybidPlacedsArgs, 'skip' | 'first' | 'subgraphError'>>;
   clusterCreated?: Resolver<Maybe<ResolversTypes['ClusterCreated']>, ParentType, ContextType, RequireFields<QueryclusterCreatedArgs, 'id' | 'subgraphError'>>;
   clusterCreateds?: Resolver<Array<ResolversTypes['ClusterCreated']>, ParentType, ContextType, RequireFields<QueryclusterCreatedsArgs, 'skip' | 'first' | 'subgraphError'>>;
+  vaultCreated?: Resolver<Maybe<ResolversTypes['VaultCreated']>, ParentType, ContextType, RequireFields<QueryvaultCreatedArgs, 'id' | 'subgraphError'>>;
+  vaultCreateds?: Resolver<Array<ResolversTypes['VaultCreated']>, ParentType, ContextType, RequireFields<QueryvaultCreatedsArgs, 'skip' | 'first' | 'subgraphError'>>;
   _meta?: Resolver<Maybe<ResolversTypes['_Meta_']>, ParentType, ContextType, Partial<Query_metaArgs>>;
 }>;
 
@@ -785,12 +1026,28 @@ export type SubscriptionResolvers<ContextType = MeshContext, ParentType extends 
   bidPlaceds?: SubscriptionResolver<Array<ResolversTypes['BidPlaced']>, "bidPlaceds", ParentType, ContextType, RequireFields<SubscriptionbidPlacedsArgs, 'skip' | 'first' | 'subgraphError'>>;
   clusterCreated?: SubscriptionResolver<Maybe<ResolversTypes['ClusterCreated']>, "clusterCreated", ParentType, ContextType, RequireFields<SubscriptionclusterCreatedArgs, 'id' | 'subgraphError'>>;
   clusterCreateds?: SubscriptionResolver<Array<ResolversTypes['ClusterCreated']>, "clusterCreateds", ParentType, ContextType, RequireFields<SubscriptionclusterCreatedsArgs, 'skip' | 'first' | 'subgraphError'>>;
+  vaultCreated?: SubscriptionResolver<Maybe<ResolversTypes['VaultCreated']>, "vaultCreated", ParentType, ContextType, RequireFields<SubscriptionvaultCreatedArgs, 'id' | 'subgraphError'>>;
+  vaultCreateds?: SubscriptionResolver<Array<ResolversTypes['VaultCreated']>, "vaultCreateds", ParentType, ContextType, RequireFields<SubscriptionvaultCreatedsArgs, 'skip' | 'first' | 'subgraphError'>>;
   _meta?: SubscriptionResolver<Maybe<ResolversTypes['_Meta_']>, "_meta", ParentType, ContextType, Partial<Subscription_metaArgs>>;
 }>;
 
 export interface TimestampScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Timestamp'], any> {
   name: 'Timestamp';
 }
+
+export type VaultCreatedResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['VaultCreated'] = ResolversParentTypes['VaultCreated']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
+  protocol?: Resolver<ResolversTypes['VaultProtocol'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['VaultType'], ParentType, ContextType>;
+  operator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  creator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  oracle?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  whitelistedDeposit?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  upgradeable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  timestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  txHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
 
 export type _Block_Resolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['_Block_'] = ResolversParentTypes['_Block_']> = ResolversObject<{
   hash?: Resolver<Maybe<ResolversTypes['Bytes']>, ParentType, ContextType>;
@@ -818,6 +1075,7 @@ export type Resolvers<ContextType = MeshContext> = ResolversObject<{
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Timestamp?: GraphQLScalarType;
+  VaultCreated?: VaultCreatedResolvers<ContextType>;
   _Block_?: _Block_Resolvers<ContextType>;
   _Meta_?: _Meta_Resolvers<ContextType>;
 }>;
@@ -836,6 +1094,9 @@ const baseDir = pathModule.join(typeof __dirname === 'string' ? __dirname : '/',
 const importFn: ImportFn = <T>(moduleId: string) => {
   const relativeModuleId = (pathModule.isAbsolute(moduleId) ? pathModule.relative(baseDir, moduleId) : moduleId).split('\\').join('/').replace(baseDir + '/', '');
   switch(relativeModuleId) {
+    case ".graphclient/sources/Byzantine Holesky/introspectionSchema":
+      return Promise.resolve(importedModule$0) as T;
+    
     default:
       return Promise.reject(new Error(`Cannot find module '${relativeModuleId}'.`));
   }
@@ -850,15 +1111,98 @@ const rootStore = new MeshStore('.graphclient', new FsStoreStorageAdapter({
   validate: false
 });
 
-export function getMeshOptions() {
-  console.warn('WARNING: These artifacts are built for development mode. Please run "graphclient build" to build production artifacts');
-  return findAndParseConfig({
-    dir: baseDir,
-    artifactsDir: ".graphclient",
-    configName: "graphclient",
-    additionalPackagePrefixes: ["@graphprotocol/client-"],
-    initialLoggerPrefix: "GraphClient",
-  });
+export const rawServeConfig: YamlConfig.Config['serve'] = undefined as any
+export async function getMeshOptions(): Promise<GetMeshOptions> {
+const pubsub = new PubSub();
+const sourcesStore = rootStore.child('sources');
+const logger = new DefaultLogger("GraphClient");
+const cache = new (MeshCache as any)({
+      ...({} as any),
+      importFn,
+      store: rootStore.child('cache'),
+      pubsub,
+      logger,
+    } as any)
+
+const sources: MeshResolvedSource[] = [];
+const transforms: MeshTransform[] = [];
+const additionalEnvelopPlugins: MeshPlugin<any>[] = [];
+const byzantineHoleskyTransforms = [];
+const additionalTypeDefs = [] as any[];
+const byzantineHoleskyHandler = new GraphqlHandler({
+              name: "Byzantine Holesky",
+              config: {"endpoint":"https://api.studio.thegraph.com/query/77400/v5-auction-byzantine-holesky/version/latest"},
+              baseDir,
+              cache,
+              pubsub,
+              store: sourcesStore.child("Byzantine Holesky"),
+              logger: logger.child("Byzantine Holesky"),
+              importFn,
+            });
+sources[0] = {
+          name: 'Byzantine Holesky',
+          handler: byzantineHoleskyHandler,
+          transforms: byzantineHoleskyTransforms
+        }
+additionalEnvelopPlugins[0] = await UsePollingLive({
+          ...({
+  "defaultInterval": 1000
+}),
+          logger: logger.child("pollingLive"),
+          cache,
+          pubsub,
+          baseDir,
+          importFn,
+        })
+const additionalResolvers = [] as any[]
+const merger = new(BareMerger as any)({
+        cache,
+        pubsub,
+        logger: logger.child('bareMerger'),
+        store: rootStore.child('bareMerger')
+      })
+const documentHashMap = {
+        "eb2f52d5e2fe9af9746f46f7fb55e89885acefdbae3bebd626dec5a0a303eb1e": GetCreatedDVsDocument,
+"b620164f0b2cb9ac58a79a25db46c53f3a929db9f6a9a32d4521f19921ae03b3": GetVaultsDocument
+      }
+additionalEnvelopPlugins.push(usePersistedOperations({
+        getPersistedOperation(key) {
+          return documentHashMap[key];
+        },
+        ...{}
+      }))
+
+  return {
+    sources,
+    transforms,
+    additionalTypeDefs,
+    additionalResolvers,
+    cache,
+    pubsub,
+    merger,
+    logger,
+    additionalEnvelopPlugins,
+    get documents() {
+      return [
+      {
+        document: GetCreatedDVsDocument,
+        get rawSDL() {
+          return printWithCache(GetCreatedDVsDocument);
+        },
+        location: 'GetCreatedDVsDocument.graphql',
+        sha256Hash: 'eb2f52d5e2fe9af9746f46f7fb55e89885acefdbae3bebd626dec5a0a303eb1e'
+      },{
+        document: GetVaultsDocument,
+        get rawSDL() {
+          return printWithCache(GetVaultsDocument);
+        },
+        location: 'GetVaultsDocument.graphql',
+        sha256Hash: 'b620164f0b2cb9ac58a79a25db46c53f3a929db9f6a9a32d4521f19921ae03b3'
+      }
+    ];
+    },
+    fetchFn,
+  };
 }
 
 export function createBuiltMeshHTTPHandler<TServerContext = {}>(): MeshHTTPHandler<TServerContext> {
@@ -868,6 +1212,7 @@ export function createBuiltMeshHTTPHandler<TServerContext = {}>(): MeshHTTPHandl
     rawServeConfig: undefined,
   })
 }
+
 
 let meshInstance$: Promise<MeshInstance> | undefined;
 
@@ -911,21 +1256,27 @@ export type GetCreatedDVsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetCreatedDVsQuery = { clusterCreateds: Array<(
-    Pick<ClusterCreated, 'id' | 'timestamp' | 'txHash' | 'splitAddress' | 'averageAuctionScore'>
+    Pick<ClusterCreated, 'id' | 'timestamp' | 'txHash' | 'splitAddress' | 'eigenPodAddr' | 'averageAuctionScore'>
     & { winners: Array<(
       Pick<BidPlaced, 'id' | 'duration' | 'discountRate' | 'bidPrice' | 'auctionScore' | 'auctionType' | 'bidStatus'>
       & { nodeOp: Pick<NodeOperator, 'nodeOpAddr'> }
     )> }
   )> };
 
+export type GetVaultsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetVaultsQuery = { vaultCreateds: Array<Pick<VaultCreated, 'id' | 'protocol' | 'type' | 'operator' | 'creator' | 'oracle' | 'whitelistedDeposit' | 'upgradeable' | 'timestamp' | 'txHash'>> };
+
 
 export const GetCreatedDVsDocument = gql`
-    query GetCreatedDVs @live(interval: 30000) {
+    query GetCreatedDVs @live(interval: 12000) {
   clusterCreateds(orderBy: timestamp, orderDirection: desc) {
     id
     timestamp
     txHash
     splitAddress
+    eigenPodAddr
     averageAuctionScore
     winners {
       id
@@ -942,6 +1293,23 @@ export const GetCreatedDVsDocument = gql`
   }
 }
     ` as unknown as DocumentNode<GetCreatedDVsQuery, GetCreatedDVsQueryVariables>;
+export const GetVaultsDocument = gql`
+    query GetVaults @live(interval: 12000) {
+  vaultCreateds(orderBy: timestamp, orderDirection: desc) {
+    id
+    protocol
+    type
+    operator
+    creator
+    oracle
+    whitelistedDeposit
+    upgradeable
+    timestamp
+    txHash
+  }
+}
+    ` as unknown as DocumentNode<GetVaultsQuery, GetVaultsQueryVariables>;
+
 
 
 export type Requester<C = {}, E = unknown> = <R, V>(doc: DocumentNode, vars?: V, options?: C) => Promise<R> | AsyncIterable<R>
@@ -949,6 +1317,9 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
   return {
     GetCreatedDVs(variables?: GetCreatedDVsQueryVariables, options?: C): AsyncIterable<GetCreatedDVsQuery> {
       return requester<GetCreatedDVsQuery, GetCreatedDVsQueryVariables>(GetCreatedDVsDocument, variables, options) as AsyncIterable<GetCreatedDVsQuery>;
+    },
+    GetVaults(variables?: GetVaultsQueryVariables, options?: C): AsyncIterable<GetVaultsQuery> {
+      return requester<GetVaultsQuery, GetVaultsQueryVariables>(GetVaultsDocument, variables, options) as AsyncIterable<GetVaultsQuery>;
     }
   };
 }
