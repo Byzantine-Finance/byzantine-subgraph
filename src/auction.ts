@@ -6,7 +6,7 @@ import {
   ClusterCreated as ClusterCreatedEvent,
   ClusterCreated1 as ClusterCreatedLegacyEvent,
 } from "../generated/Auction/Auction";
-import { NodeOperator, BidPlaced, ClusterCreated } from "../generated/schema";
+import { NodeOperator, BidPlaced, ClusterCreated, VaultCreated } from "../generated/schema";
 import {
   ethereum,
   JSONValue,
@@ -194,6 +194,13 @@ export function handleClusterCreated(event: ClusterCreatedEvent): void {
     return;
   }
 
+  let vaultEntity = VaultCreated.load(event.params.vaultAddr);
+  if (vaultEntity == null) {
+    log.warning("Vault with ID {} not found", [event.params.vaultAddr.toHex()]);
+    return;
+  }
+
+  clusterEntity.vault = vaultEntity.id; // reference to the VaultCreated entity
   clusterEntity.averageAuctionScore = event.params.averageAuctionScore;
   clusterEntity.splitAddress = event.params.splitAddr.toHex();
   // Only exists on the updated event
@@ -203,7 +210,7 @@ export function handleClusterCreated(event: ClusterCreatedEvent): void {
   clusterEntity.save();
 }
 
-// Function specifically to handle the legacy ClusterCreated event (without eigenPodAddr)
+// Function specifically to handle the legacy ClusterCreated event (hardcoded eigenPodAddr and vaultAddr)
 export function handleClusterCreatedLegacy(event: ClusterCreatedLegacyEvent): void {
   let clusterEntity = ClusterCreated.load(event.params.clusterId);
   if (clusterEntity == null) {
@@ -211,6 +218,13 @@ export function handleClusterCreatedLegacy(event: ClusterCreatedLegacyEvent): vo
     return;
   }
 
+  let vaultEntity = VaultCreated.load(Address.fromString("0x5db1A17cB543997F8b3D7e6f8A544041507B9DA6"));
+  if (vaultEntity == null) {
+    log.warning("Vault with ID {} not found", [Address.fromString("0x5db1A17cB543997F8b3D7e6f8A544041507B9DA6").toHex()]);
+    return;
+  }
+
+  clusterEntity.vault = vaultEntity.id; // reference to the VaultCreated entity
   clusterEntity.averageAuctionScore = event.params.averageAuctionScore;
   clusterEntity.splitAddress = event.params.splitAddr.toHex();
   clusterEntity.eigenPodAddr = "0x21E2a892DDc9BD3c0466299172F8b1D8026925ED";
