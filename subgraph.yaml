@@ -35,7 +35,7 @@ dataSources:
           handler: handleWinnerJoinedCluster
         - event: ClusterCreated(indexed bytes32,uint256,address)
           handler: handleClusterCreatedLegacy
-        - event: ClusterCreated(indexed bytes32,uint256,address,address)
+        - event: ClusterCreated(indexed bytes32,uint256,address,address,address)
           handler: handleClusterCreated
       file: ./src/auction.ts
   - kind: ethereum

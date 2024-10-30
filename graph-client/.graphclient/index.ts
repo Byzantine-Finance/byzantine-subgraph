@@ -215,6 +215,7 @@ export type ClusterCreated = {
   timestamp?: Maybe<Scalars['BigInt']['output']>;
   txHash?: Maybe<Scalars['String']['output']>;
   winners: Array<BidPlaced>;
+  vault?: Maybe<VaultCreated>;
 };
 
 
@@ -320,6 +321,27 @@ export type ClusterCreated_filter = {
   winners_not_contains?: InputMaybe<Array<Scalars['String']['input']>>;
   winners_not_contains_nocase?: InputMaybe<Array<Scalars['String']['input']>>;
   winners_?: InputMaybe<BidPlaced_filter>;
+  vault?: InputMaybe<Scalars['String']['input']>;
+  vault_not?: InputMaybe<Scalars['String']['input']>;
+  vault_gt?: InputMaybe<Scalars['String']['input']>;
+  vault_lt?: InputMaybe<Scalars['String']['input']>;
+  vault_gte?: InputMaybe<Scalars['String']['input']>;
+  vault_lte?: InputMaybe<Scalars['String']['input']>;
+  vault_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  vault_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  vault_contains?: InputMaybe<Scalars['String']['input']>;
+  vault_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_not_contains?: InputMaybe<Scalars['String']['input']>;
+  vault_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_starts_with?: InputMaybe<Scalars['String']['input']>;
+  vault_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  vault_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_ends_with?: InputMaybe<Scalars['String']['input']>;
+  vault_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  vault_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_?: InputMaybe<VaultCreated_filter>;
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
   and?: InputMaybe<Array<InputMaybe<ClusterCreated_filter>>>;
@@ -333,7 +355,18 @@ export type ClusterCreated_orderBy =
   | 'eigenPodAddr'
   | 'timestamp'
   | 'txHash'
-  | 'winners';
+  | 'winners'
+  | 'vault'
+  | 'vault__id'
+  | 'vault__protocol'
+  | 'vault__type'
+  | 'vault__operator'
+  | 'vault__creator'
+  | 'vault__oracle'
+  | 'vault__whitelistedDeposit'
+  | 'vault__upgradeable'
+  | 'vault__timestamp'
+  | 'vault__txHash';
 
 export type NodeOperator = {
   id: Scalars['Bytes']['output'];
@@ -613,6 +646,16 @@ export type VaultCreated = {
   upgradeable: Scalars['Boolean']['output'];
   timestamp: Scalars['BigInt']['output'];
   txHash: Scalars['String']['output'];
+  clusters?: Maybe<Array<ClusterCreated>>;
+};
+
+
+export type VaultCreatedclustersArgs = {
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ClusterCreated_orderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  where?: InputMaybe<ClusterCreated_filter>;
 };
 
 export type VaultCreated_filter = {
@@ -730,6 +773,7 @@ export type VaultCreated_filter = {
   txHash_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
   txHash_not_ends_with?: InputMaybe<Scalars['String']['input']>;
   txHash_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  clusters_?: InputMaybe<ClusterCreated_filter>;
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
   and?: InputMaybe<Array<InputMaybe<VaultCreated_filter>>>;
@@ -746,7 +790,8 @@ export type VaultCreated_orderBy =
   | 'whitelistedDeposit'
   | 'upgradeable'
   | 'timestamp'
-  | 'txHash';
+  | 'txHash'
+  | 'clusters';
 
 export type VaultProtocol =
   | 'EigenLayer'
@@ -991,6 +1036,7 @@ export type ClusterCreatedResolvers<ContextType = MeshContext, ParentType extend
   timestamp?: Resolver<Maybe<ResolversTypes['BigInt']>, ParentType, ContextType>;
   txHash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   winners?: Resolver<Array<ResolversTypes['BidPlaced']>, ParentType, ContextType, RequireFields<ClusterCreatedwinnersArgs, 'skip' | 'first'>>;
+  vault?: Resolver<Maybe<ResolversTypes['VaultCreated']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1046,6 +1092,7 @@ export type VaultCreatedResolvers<ContextType = MeshContext, ParentType extends 
   upgradeable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   timestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   txHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  clusters?: Resolver<Maybe<Array<ResolversTypes['ClusterCreated']>>, ParentType, ContextType, RequireFields<VaultCreatedclustersArgs, 'skip' | 'first'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1162,8 +1209,8 @@ const merger = new(BareMerger as any)({
         store: rootStore.child('bareMerger')
       })
 const documentHashMap = {
-        "eb2f52d5e2fe9af9746f46f7fb55e89885acefdbae3bebd626dec5a0a303eb1e": GetCreatedDVsDocument,
-"b620164f0b2cb9ac58a79a25db46c53f3a929db9f6a9a32d4521f19921ae03b3": GetVaultsDocument
+        "ad3f119e11d7c4656fff8e1dd81e3bacd7a03e185aa5947ca30950d541d0c218": GetCreatedDVsDocument,
+"2c7c77d328b32cc6cc73d8353368b5fbc7324d184ad2a6ec883b4e240dd4870e": GetVaultsDocument
       }
 additionalEnvelopPlugins.push(usePersistedOperations({
         getPersistedOperation(key) {
@@ -1190,14 +1237,14 @@ additionalEnvelopPlugins.push(usePersistedOperations({
           return printWithCache(GetCreatedDVsDocument);
         },
         location: 'GetCreatedDVsDocument.graphql',
-        sha256Hash: 'eb2f52d5e2fe9af9746f46f7fb55e89885acefdbae3bebd626dec5a0a303eb1e'
+        sha256Hash: 'ad3f119e11d7c4656fff8e1dd81e3bacd7a03e185aa5947ca30950d541d0c218'
       },{
         document: GetVaultsDocument,
         get rawSDL() {
           return printWithCache(GetVaultsDocument);
         },
         location: 'GetVaultsDocument.graphql',
-        sha256Hash: 'b620164f0b2cb9ac58a79a25db46c53f3a929db9f6a9a32d4521f19921ae03b3'
+        sha256Hash: '2c7c77d328b32cc6cc73d8353368b5fbc7324d184ad2a6ec883b4e240dd4870e'
       }
     ];
     },
@@ -1260,13 +1307,22 @@ export type GetCreatedDVsQuery = { clusterCreateds: Array<(
     & { winners: Array<(
       Pick<BidPlaced, 'id' | 'duration' | 'discountRate' | 'bidPrice' | 'auctionScore' | 'auctionType' | 'bidStatus'>
       & { nodeOp: Pick<NodeOperator, 'nodeOpAddr'> }
-    )> }
+    )>, vault?: Maybe<Pick<VaultCreated, 'id' | 'protocol' | 'type' | 'operator' | 'creator' | 'oracle' | 'whitelistedDeposit' | 'upgradeable' | 'timestamp' | 'txHash'>> }
   )> };
 
 export type GetVaultsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetVaultsQuery = { vaultCreateds: Array<Pick<VaultCreated, 'id' | 'protocol' | 'type' | 'operator' | 'creator' | 'oracle' | 'whitelistedDeposit' | 'upgradeable' | 'timestamp' | 'txHash'>> };
+export type GetVaultsQuery = { vaultCreateds: Array<(
+    Pick<VaultCreated, 'id' | 'protocol' | 'type' | 'operator' | 'creator' | 'oracle' | 'whitelistedDeposit' | 'upgradeable' | 'timestamp' | 'txHash'>
+    & { clusters?: Maybe<Array<(
+      Pick<ClusterCreated, 'id' | 'averageAuctionScore' | 'splitAddress' | 'eigenPodAddr' | 'timestamp' | 'txHash'>
+      & { winners: Array<(
+        Pick<BidPlaced, 'id' | 'duration' | 'discountRate' | 'bidPrice' | 'auctionScore' | 'auctionType' | 'bidStatus'>
+        & { nodeOp: Pick<NodeOperator, 'nodeOpAddr'> }
+      )> }
+    )>> }
+  )> };
 
 
 export const GetCreatedDVsDocument = gql`
@@ -1290,6 +1346,18 @@ export const GetCreatedDVsDocument = gql`
       auctionType
       bidStatus
     }
+    vault {
+      id
+      protocol
+      type
+      operator
+      creator
+      oracle
+      whitelistedDeposit
+      upgradeable
+      timestamp
+      txHash
+    }
   }
 }
     ` as unknown as DocumentNode<GetCreatedDVsQuery, GetCreatedDVsQueryVariables>;
@@ -1306,6 +1374,26 @@ export const GetVaultsDocument = gql`
     upgradeable
     timestamp
     txHash
+    clusters {
+      id
+      averageAuctionScore
+      splitAddress
+      eigenPodAddr
+      timestamp
+      txHash
+      winners {
+        id
+        nodeOp {
+          nodeOpAddr
+        }
+        duration
+        discountRate
+        bidPrice
+        auctionScore
+        auctionType
+        bidStatus
+      }
+    }
   }
 }
     ` as unknown as DocumentNode<GetVaultsQuery, GetVaultsQueryVariables>;

@@ -27,6 +27,7 @@ type ClusterCreated @entity {
   timestamp: BigInt
   txHash: String
   winners: [BidPlaced!]!
+  vault: VaultCreated # reference to VaultCreated entity, available only when the ClusterCreated event is emitted
 }
 
 type VaultCreated @entity {
@@ -40,6 +41,7 @@ type VaultCreated @entity {
   upgradeable: Boolean!
   timestamp: BigInt!
   txHash: String!
+  clusters: [ClusterCreated!] @derivedFrom(field: "vault")
 }
 
 enum BidStatus {

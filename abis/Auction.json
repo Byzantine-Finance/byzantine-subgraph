@@ -166,6 +166,12 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "vaultAddr",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "splitAddr",
         "type": "address"
       },
