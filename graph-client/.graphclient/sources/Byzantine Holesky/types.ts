@@ -191,6 +191,7 @@ export type ClusterCreated = {
   timestamp?: Maybe<Scalars['BigInt']['output']>;
   txHash?: Maybe<Scalars['String']['output']>;
   winners: Array<BidPlaced>;
+  vault?: Maybe<VaultCreated>;
 };
 
 
@@ -296,6 +297,27 @@ export type ClusterCreated_filter = {
   winners_not_contains?: InputMaybe<Array<Scalars['String']['input']>>;
   winners_not_contains_nocase?: InputMaybe<Array<Scalars['String']['input']>>;
   winners_?: InputMaybe<BidPlaced_filter>;
+  vault?: InputMaybe<Scalars['String']['input']>;
+  vault_not?: InputMaybe<Scalars['String']['input']>;
+  vault_gt?: InputMaybe<Scalars['String']['input']>;
+  vault_lt?: InputMaybe<Scalars['String']['input']>;
+  vault_gte?: InputMaybe<Scalars['String']['input']>;
+  vault_lte?: InputMaybe<Scalars['String']['input']>;
+  vault_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  vault_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  vault_contains?: InputMaybe<Scalars['String']['input']>;
+  vault_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_not_contains?: InputMaybe<Scalars['String']['input']>;
+  vault_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_starts_with?: InputMaybe<Scalars['String']['input']>;
+  vault_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  vault_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_ends_with?: InputMaybe<Scalars['String']['input']>;
+  vault_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  vault_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_?: InputMaybe<VaultCreated_filter>;
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
   and?: InputMaybe<Array<InputMaybe<ClusterCreated_filter>>>;
@@ -309,7 +331,18 @@ export type ClusterCreated_orderBy =
   | 'eigenPodAddr'
   | 'timestamp'
   | 'txHash'
-  | 'winners';
+  | 'winners'
+  | 'vault'
+  | 'vault__id'
+  | 'vault__protocol'
+  | 'vault__type'
+  | 'vault__operator'
+  | 'vault__creator'
+  | 'vault__oracle'
+  | 'vault__whitelistedDeposit'
+  | 'vault__upgradeable'
+  | 'vault__timestamp'
+  | 'vault__txHash';
 
 export type NodeOperator = {
   id: Scalars['Bytes']['output'];
@@ -589,6 +622,16 @@ export type VaultCreated = {
   upgradeable: Scalars['Boolean']['output'];
   timestamp: Scalars['BigInt']['output'];
   txHash: Scalars['String']['output'];
+  clusters?: Maybe<Array<ClusterCreated>>;
+};
+
+
+export type VaultCreatedclustersArgs = {
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ClusterCreated_orderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  where?: InputMaybe<ClusterCreated_filter>;
 };
 
 export type VaultCreated_filter = {
@@ -706,6 +749,7 @@ export type VaultCreated_filter = {
   txHash_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
   txHash_not_ends_with?: InputMaybe<Scalars['String']['input']>;
   txHash_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  clusters_?: InputMaybe<ClusterCreated_filter>;
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
   and?: InputMaybe<Array<InputMaybe<VaultCreated_filter>>>;
@@ -722,7 +766,8 @@ export type VaultCreated_orderBy =
   | 'whitelistedDeposit'
   | 'upgradeable'
   | 'timestamp'
-  | 'txHash';
+  | 'txHash'
+  | 'clusters';
 
 export type VaultProtocol =
   | 'EigenLayer'

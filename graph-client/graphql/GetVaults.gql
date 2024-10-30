@@ -10,5 +10,25 @@ query GetVaults @live(interval: 12000) {
     upgradeable
     timestamp
     txHash
+    clusters {
+      id
+      averageAuctionScore
+      splitAddress
+      eigenPodAddr
+      timestamp
+      txHash
+      winners {
+        id
+        nodeOp {
+        nodeOpAddr
+      }
+      duration
+      discountRate
+      bidPrice
+      auctionScore
+      auctionType
+        bidStatus
+      }
+    }
   }
 }

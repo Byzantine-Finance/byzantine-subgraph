@@ -18,5 +18,17 @@ query GetCreatedDVs @live(interval: 12000) {
       auctionType
       bidStatus
     }
+    vault {
+      id
+      protocol
+      type
+      operator
+      creator
+      oracle
+      whitelistedDeposit
+      upgradeable
+      timestamp
+      txHash
+    }
   }
 }
