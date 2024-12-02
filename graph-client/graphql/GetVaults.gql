@@ -10,6 +10,7 @@ query GetVaults @live(interval: 12000) {
     upgradeable
     timestamp
     txHash
+    tvl
     clusters {
       id
       averageAuctionScore

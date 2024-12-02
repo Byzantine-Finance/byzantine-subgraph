@@ -41,6 +41,7 @@ type VaultCreated @entity {
   upgradeable: Boolean!
   timestamp: BigInt!
   txHash: String!
+  tvl: BigInt!
   clusters: [ClusterCreated!] @derivedFrom(field: "vault")
 }
 

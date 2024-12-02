@@ -200,6 +200,9 @@ export function handleClusterCreated(event: ClusterCreatedEvent): void {
     return;
   }
 
+  vaultEntity.tvl = vaultEntity.tvl.plus(BigInt.fromString("32000000000000000000"));
+  vaultEntity.save();
+
   clusterEntity.vault = vaultEntity.id; // reference to the VaultCreated entity
   clusterEntity.averageAuctionScore = event.params.averageAuctionScore;
   clusterEntity.splitAddress = event.params.splitAddr.toHex();
@@ -223,6 +226,9 @@ export function handleClusterCreatedLegacy(event: ClusterCreatedLegacyEvent): vo
     log.warning("Vault with ID {} not found", [Address.fromString("0x5db1A17cB543997F8b3D7e6f8A544041507B9DA6").toHex()]);
     return;
   }
+
+  vaultEntity.tvl = vaultEntity.tvl.plus(BigInt.fromString("32000000000000000000"));
+  vaultEntity.save();
 
   clusterEntity.vault = vaultEntity.id; // reference to the VaultCreated entity
   clusterEntity.averageAuctionScore = event.params.averageAuctionScore;

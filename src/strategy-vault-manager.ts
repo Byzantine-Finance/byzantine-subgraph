@@ -4,6 +4,7 @@ import {
 import {
   VaultCreated
 } from "../generated/schema"
+import { BigInt } from "@graphprotocol/graph-ts"
 
 export function handleEigenLayerNativeVaultCreated(
   event: EigenLayerNativeVaultCreatedEvent,
@@ -19,5 +20,6 @@ export function handleEigenLayerNativeVaultCreated(
   vaultEntity.upgradeable = event.params.stratUpgradeable;
   vaultEntity.timestamp = event.block.timestamp;
   vaultEntity.txHash = event.transaction.hash.toHex();
+  vaultEntity.tvl = BigInt.fromI32(0);
   vaultEntity.save()
 }
