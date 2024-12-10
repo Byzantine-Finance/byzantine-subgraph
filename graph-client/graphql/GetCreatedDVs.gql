@@ -1,16 +1,34 @@
-query GetCreatedDVs @live(interval: 30000) {
-  dvs(orderBy: timestamp, orderDirection: desc) {
+query GetCreatedDVs @live(interval: 12000) {
+  clusterCreateds(orderBy: timestamp, orderDirection: desc) {
+    id
     timestamp
     txHash
+    splitAddress
+    eigenPodAddr
+    averageAuctionScore
     winners {
+      id
       nodeOp {
         nodeOpAddr
       }
       duration
       discountRate
       bidPrice
-      uint256AuctionScore
+      auctionScore
+      auctionType
       bidStatus
+    }
+    vault {
+      id
+      protocol
+      type
+      operator
+      creator
+      oracle
+      whitelistedDeposit
+      upgradeable
+      timestamp
+      txHash
     }
   }
 }

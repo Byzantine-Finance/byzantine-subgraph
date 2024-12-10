@@ -1,0 +1,388 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "contract IBeacon",
+        "name": "_stratVaultETHBeacon",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IBeacon",
+        "name": "_stratVaultERC20Beacon",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IAuction",
+        "name": "_auction",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IByzNft",
+        "name": "_byzNft",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IEigenPodManager",
+        "name": "_eigenPodManager",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IDelegationManager",
+        "name": "_delegationManager",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IStrategyManager",
+        "name": "_strategyManager",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "name": "DoNotHaveStratVault",
+    "type": "error"
+  },
+  { "inputs": [], "name": "EmptyAuction", "type": "error" },
+  { "inputs": [], "name": "NotStratVaultOwner", "type": "error" },
+  { "inputs": [], "name": "SplitAddressNotSet", "type": "error" },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "vaultAddr",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "eigenLayerStrat",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "vaultCreator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "byzantineOracle",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "privateVault",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "stratUpgradeable",
+        "type": "bool"
+      }
+    ],
+    "name": "EigenLayerNativeVaultCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "version",
+        "type": "uint8"
+      }
+    ],
+    "name": "Initialized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "auction",
+    "outputs": [
+      { "internalType": "contract IAuction", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "byzNft",
+    "outputs": [
+      { "internalType": "contract IByzNft", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IStrategy",
+        "name": "strategy",
+        "type": "address"
+      },
+      { "internalType": "contract IERC20", "name": "token", "type": "address" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" },
+      { "internalType": "bool", "name": "whitelistedDeposit", "type": "bool" },
+      { "internalType": "bool", "name": "upgradeable", "type": "bool" },
+      { "internalType": "address", "name": "operator", "type": "address" },
+      { "internalType": "address", "name": "oracle", "type": "address" }
+    ],
+    "name": "createStratVaultAndStakeERC20",
+    "outputs": [
+      { "internalType": "address", "name": "stratVaultAddr", "type": "address" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bool", "name": "whitelistedDeposit", "type": "bool" },
+      { "internalType": "bool", "name": "upgradeable", "type": "bool" },
+      { "internalType": "address", "name": "operator", "type": "address" },
+      { "internalType": "address", "name": "oracle", "type": "address" },
+      { "internalType": "address", "name": "receiver", "type": "address" }
+    ],
+    "name": "createStratVaultAndStakeNativeETH",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "contract IERC20", "name": "token", "type": "address" },
+      { "internalType": "bool", "name": "whitelistedDeposit", "type": "bool" },
+      { "internalType": "bool", "name": "upgradeable", "type": "bool" },
+      { "internalType": "address", "name": "operator", "type": "address" },
+      { "internalType": "address", "name": "oracle", "type": "address" }
+    ],
+    "name": "createStratVaultERC20",
+    "outputs": [
+      { "internalType": "address", "name": "stratVaultAddr", "type": "address" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bool", "name": "whitelistedDeposit", "type": "bool" },
+      { "internalType": "bool", "name": "upgradeable", "type": "bool" },
+      { "internalType": "address", "name": "operator", "type": "address" },
+      { "internalType": "address", "name": "oracle", "type": "address" }
+    ],
+    "name": "createStratVaultETH",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "delegationManager",
+    "outputs": [
+      {
+        "internalType": "contract IDelegationManager",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "_clusterId", "type": "bytes32" },
+      {
+        "components": [
+          {
+            "internalType": "address[]",
+            "name": "recipients",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "allocations",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalAllocation",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint16",
+            "name": "distributionIncentive",
+            "type": "uint16"
+          }
+        ],
+        "internalType": "struct SplitV2Lib.Split",
+        "name": "_split",
+        "type": "tuple"
+      },
+      { "internalType": "address", "name": "_token", "type": "address" }
+    ],
+    "name": "distributeSplitBalance",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "eigenPodManager",
+    "outputs": [
+      {
+        "internalType": "contract IEigenPodManager",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllStratVaultETHs",
+    "outputs": [
+      { "internalType": "address[]", "name": "", "type": "address[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "stratVaultAddr", "type": "address" }
+    ],
+    "name": "getPodByStratVaultAddr",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "nftId", "type": "uint256" }
+    ],
+    "name": "getStratVaultByNftId",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "initialOwner", "type": "address" }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "stratVault", "type": "address" }
+    ],
+    "name": "isStratVaultETH",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "name": "nftIdToStratVault",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "numStratVaultETHs",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "numStratVaults",
+    "outputs": [{ "internalType": "uint64", "name": "", "type": "uint64" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "stratVaultERC20Beacon",
+    "outputs": [
+      { "internalType": "contract IBeacon", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "stratVaultETHBeacon",
+    "outputs": [
+      { "internalType": "contract IBeacon", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "strategyManager",
+    "outputs": [
+      {
+        "internalType": "contract IStrategyManager",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "newOwner", "type": "address" }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

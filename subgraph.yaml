@@ -8,9 +8,9 @@ dataSources:
     name: Auction
     network: holesky
     source:
-      address: "0x1ae6F573F0D7b4b966Ce103BC18F3A3b9E43987b"
+      address: "0xC050C50e18CB8787dDF1E1227c0FE7A8a5404815"
       abi: Auction
-      startBlock: 1769909
+      startBlock: 2510892
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -19,17 +19,43 @@ dataSources:
         - BidPlaced
         - BidUpdated
         - BidWithdrawn
-        - WinnerJoinedDV
+        - WinnerJoinedCluster
+        - ClusterCreated
       abis:
         - name: Auction
           file: ./abis/Auction.json
       eventHandlers:
-        - event: BidPlaced(indexed address,uint256,uint256,uint256,uint256,uint256)
+        - event: BidPlaced(indexed address,bytes32,uint16,uint32,uint256,uint256,uint8)
           handler: handleBidPlaced
-        - event: BidUpdated(indexed address,uint256,uint256,uint256,uint256,uint256,uint256)
+        - event: BidUpdated(indexed address,indexed bytes32,uint16,uint32,uint256,uint256)
           handler: handleBidUpdated
-        - event: BidWithdrawn(indexed address,uint256)
+        - event: BidWithdrawn(indexed address,indexed bytes32)
           handler: handleBidWithdrawn
-        - event: WinnerJoinedDV(indexed address,uint256)
-          handler: handleWinnerJoinedDV
+        - event: WinnerJoinedCluster(indexed address,indexed bytes32,bytes32)
+          handler: handleWinnerJoinedCluster
+        - event: ClusterCreated(indexed bytes32,uint256,address)
+          handler: handleClusterCreatedLegacy
+        - event: ClusterCreated(indexed bytes32,uint256,address,address,address)
+          handler: handleClusterCreated
       file: ./src/auction.ts
+  - kind: ethereum
+    name: StrategyVaultManager
+    network: holesky
+    source:
+      address: "0x7027CfbB4E295288c7346c04C577f03aA9a1e5a4"
+      abi: StrategyVaultManager
+      startBlock: 2510892
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - EigenLayerNativeVaultCreated
+      abis:
+        - name: StrategyVaultManager
+          file: ./abis/StrategyVaultManager.json
+      eventHandlers:
+        - event: EigenLayerNativeVaultCreated(indexed address,indexed
+            address,address,address,bool,bool)
+          handler: handleEigenLayerNativeVaultCreated
+      file: ./src/strategy-vault-manager.ts

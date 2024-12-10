@@ -29,16 +29,22 @@ export type Aggregation_interval =
   | 'hour'
   | 'day';
 
+export type AuctionType =
+  | 'Null'
+  | 'ClusterSize4'
+  | 'ClusterSize7';
+
 export type BidPlaced = {
   id: Scalars['Bytes']['output'];
   nodeOp: NodeOperator;
   discountRate: Scalars['BigDecimal']['output'];
   duration: Scalars['BigInt']['output'];
   bidPrice: Scalars['BigDecimal']['output'];
-  uint256AuctionScore: Scalars['BigInt']['output'];
+  auctionScore: Scalars['BigInt']['output'];
   timestamp: Scalars['BigInt']['output'];
   txHash?: Maybe<Scalars['String']['output']>;
   bidStatus: BidStatus;
+  auctionType: AuctionType;
 };
 
 export type BidPlaced_filter = {
@@ -97,14 +103,14 @@ export type BidPlaced_filter = {
   bidPrice_lte?: InputMaybe<Scalars['BigDecimal']['input']>;
   bidPrice_in?: InputMaybe<Array<Scalars['BigDecimal']['input']>>;
   bidPrice_not_in?: InputMaybe<Array<Scalars['BigDecimal']['input']>>;
-  uint256AuctionScore?: InputMaybe<Scalars['BigInt']['input']>;
-  uint256AuctionScore_not?: InputMaybe<Scalars['BigInt']['input']>;
-  uint256AuctionScore_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  uint256AuctionScore_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  uint256AuctionScore_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  uint256AuctionScore_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  uint256AuctionScore_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  uint256AuctionScore_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  auctionScore?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionScore_not?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionScore_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionScore_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionScore_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionScore_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionScore_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  auctionScore_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   timestamp?: InputMaybe<Scalars['BigInt']['input']>;
   timestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
   timestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
@@ -137,6 +143,10 @@ export type BidPlaced_filter = {
   bidStatus_not?: InputMaybe<BidStatus>;
   bidStatus_in?: InputMaybe<Array<BidStatus>>;
   bidStatus_not_in?: InputMaybe<Array<BidStatus>>;
+  auctionType?: InputMaybe<AuctionType>;
+  auctionType_not?: InputMaybe<AuctionType>;
+  auctionType_in?: InputMaybe<Array<AuctionType>>;
+  auctionType_not_in?: InputMaybe<Array<AuctionType>>;
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
   and?: InputMaybe<Array<InputMaybe<BidPlaced_filter>>>;
@@ -148,15 +158,15 @@ export type BidPlaced_orderBy =
   | 'nodeOp'
   | 'nodeOp__id'
   | 'nodeOp__nodeOpAddr'
-  | 'nodeOp__reputationScore'
-  | 'nodeOp__hasActiveBids'
+  | 'nodeOp__hasPendingBids'
   | 'discountRate'
   | 'duration'
   | 'bidPrice'
-  | 'uint256AuctionScore'
+  | 'auctionScore'
   | 'timestamp'
   | 'txHash'
-  | 'bidStatus';
+  | 'bidStatus'
+  | 'auctionType';
 
 export type BidStatus =
   | 'Closed'
@@ -173,15 +183,19 @@ export type Block_height = {
   number_gte?: InputMaybe<Scalars['Int']['input']>;
 };
 
-export type DV = {
+export type ClusterCreated = {
   id: Scalars['Bytes']['output'];
-  timestamp: Scalars['BigInt']['output'];
-  txHash: Scalars['String']['output'];
+  averageAuctionScore?: Maybe<Scalars['BigInt']['output']>;
+  splitAddress?: Maybe<Scalars['String']['output']>;
+  eigenPodAddr?: Maybe<Scalars['String']['output']>;
+  timestamp?: Maybe<Scalars['BigInt']['output']>;
+  txHash?: Maybe<Scalars['String']['output']>;
   winners: Array<BidPlaced>;
+  vault?: Maybe<VaultCreated>;
 };
 
 
-export type DVwinnersArgs = {
+export type ClusterCreatedwinnersArgs = {
   skip?: InputMaybe<Scalars['Int']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<BidPlaced_orderBy>;
@@ -189,7 +203,7 @@ export type DVwinnersArgs = {
   where?: InputMaybe<BidPlaced_filter>;
 };
 
-export type DV_filter = {
+export type ClusterCreated_filter = {
   id?: InputMaybe<Scalars['Bytes']['input']>;
   id_not?: InputMaybe<Scalars['Bytes']['input']>;
   id_gt?: InputMaybe<Scalars['Bytes']['input']>;
@@ -200,6 +214,54 @@ export type DV_filter = {
   id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
   id_contains?: InputMaybe<Scalars['Bytes']['input']>;
   id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
+  averageAuctionScore?: InputMaybe<Scalars['BigInt']['input']>;
+  averageAuctionScore_not?: InputMaybe<Scalars['BigInt']['input']>;
+  averageAuctionScore_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  averageAuctionScore_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  averageAuctionScore_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  averageAuctionScore_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  averageAuctionScore_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  averageAuctionScore_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  splitAddress?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_not?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_gt?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_lt?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_gte?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_lte?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  splitAddress_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  splitAddress_contains?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_not_contains?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_starts_with?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_ends_with?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  splitAddress_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_not?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_gt?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_lt?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_gte?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_lte?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  eigenPodAddr_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  eigenPodAddr_contains?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_not_contains?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_starts_with?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_ends_with?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  eigenPodAddr_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
   timestamp?: InputMaybe<Scalars['BigInt']['input']>;
   timestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
   timestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
@@ -235,24 +297,59 @@ export type DV_filter = {
   winners_not_contains?: InputMaybe<Array<Scalars['String']['input']>>;
   winners_not_contains_nocase?: InputMaybe<Array<Scalars['String']['input']>>;
   winners_?: InputMaybe<BidPlaced_filter>;
+  vault?: InputMaybe<Scalars['String']['input']>;
+  vault_not?: InputMaybe<Scalars['String']['input']>;
+  vault_gt?: InputMaybe<Scalars['String']['input']>;
+  vault_lt?: InputMaybe<Scalars['String']['input']>;
+  vault_gte?: InputMaybe<Scalars['String']['input']>;
+  vault_lte?: InputMaybe<Scalars['String']['input']>;
+  vault_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  vault_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  vault_contains?: InputMaybe<Scalars['String']['input']>;
+  vault_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_not_contains?: InputMaybe<Scalars['String']['input']>;
+  vault_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_starts_with?: InputMaybe<Scalars['String']['input']>;
+  vault_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  vault_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_ends_with?: InputMaybe<Scalars['String']['input']>;
+  vault_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  vault_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  vault_?: InputMaybe<VaultCreated_filter>;
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<DV_filter>>>;
-  or?: InputMaybe<Array<InputMaybe<DV_filter>>>;
+  and?: InputMaybe<Array<InputMaybe<ClusterCreated_filter>>>;
+  or?: InputMaybe<Array<InputMaybe<ClusterCreated_filter>>>;
 };
 
-export type DV_orderBy =
+export type ClusterCreated_orderBy =
   | 'id'
+  | 'averageAuctionScore'
+  | 'splitAddress'
+  | 'eigenPodAddr'
   | 'timestamp'
   | 'txHash'
-  | 'winners';
+  | 'winners'
+  | 'vault'
+  | 'vault__id'
+  | 'vault__protocol'
+  | 'vault__type'
+  | 'vault__operator'
+  | 'vault__creator'
+  | 'vault__oracle'
+  | 'vault__whitelistedDeposit'
+  | 'vault__upgradeable'
+  | 'vault__timestamp'
+  | 'vault__txHash';
 
 export type NodeOperator = {
   id: Scalars['Bytes']['output'];
   nodeOpAddr: Scalars['String']['output'];
-  reputationScore: Scalars['BigInt']['output'];
-  hasActiveBids: Scalars['Boolean']['output'];
+  hasPendingBids: Scalars['Boolean']['output'];
   bids?: Maybe<Array<BidPlaced>>;
+  clusters?: Maybe<Array<ClusterCreated>>;
 };
 
 
@@ -262,6 +359,15 @@ export type NodeOperatorbidsArgs = {
   orderBy?: InputMaybe<BidPlaced_orderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
   where?: InputMaybe<BidPlaced_filter>;
+};
+
+
+export type NodeOperatorclustersArgs = {
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ClusterCreated_orderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  where?: InputMaybe<ClusterCreated_filter>;
 };
 
 export type NodeOperator_filter = {
@@ -295,19 +401,18 @@ export type NodeOperator_filter = {
   nodeOpAddr_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
   nodeOpAddr_not_ends_with?: InputMaybe<Scalars['String']['input']>;
   nodeOpAddr_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  reputationScore?: InputMaybe<Scalars['BigInt']['input']>;
-  reputationScore_not?: InputMaybe<Scalars['BigInt']['input']>;
-  reputationScore_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  reputationScore_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  reputationScore_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  reputationScore_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  reputationScore_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  reputationScore_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  hasActiveBids?: InputMaybe<Scalars['Boolean']['input']>;
-  hasActiveBids_not?: InputMaybe<Scalars['Boolean']['input']>;
-  hasActiveBids_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  hasActiveBids_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  hasPendingBids?: InputMaybe<Scalars['Boolean']['input']>;
+  hasPendingBids_not?: InputMaybe<Scalars['Boolean']['input']>;
+  hasPendingBids_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  hasPendingBids_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
   bids_?: InputMaybe<BidPlaced_filter>;
+  clusters?: InputMaybe<Array<Scalars['String']['input']>>;
+  clusters_not?: InputMaybe<Array<Scalars['String']['input']>>;
+  clusters_contains?: InputMaybe<Array<Scalars['String']['input']>>;
+  clusters_contains_nocase?: InputMaybe<Array<Scalars['String']['input']>>;
+  clusters_not_contains?: InputMaybe<Array<Scalars['String']['input']>>;
+  clusters_not_contains_nocase?: InputMaybe<Array<Scalars['String']['input']>>;
+  clusters_?: InputMaybe<ClusterCreated_filter>;
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
   and?: InputMaybe<Array<InputMaybe<NodeOperator_filter>>>;
@@ -317,9 +422,9 @@ export type NodeOperator_filter = {
 export type NodeOperator_orderBy =
   | 'id'
   | 'nodeOpAddr'
-  | 'reputationScore'
-  | 'hasActiveBids'
-  | 'bids';
+  | 'hasPendingBids'
+  | 'bids'
+  | 'clusters';
 
 /** Defines the order direction, either ascending or descending */
 export type OrderDirection =
@@ -331,8 +436,10 @@ export type Query = {
   nodeOperators: Array<NodeOperator>;
   bidPlaced?: Maybe<BidPlaced>;
   bidPlaceds: Array<BidPlaced>;
-  dv?: Maybe<DV>;
-  dvs: Array<DV>;
+  clusterCreated?: Maybe<ClusterCreated>;
+  clusterCreateds: Array<ClusterCreated>;
+  vaultCreated?: Maybe<VaultCreated>;
+  vaultCreateds: Array<VaultCreated>;
   /** Access to subgraph metadata */
   _meta?: Maybe<_Meta_>;
 };
@@ -374,19 +481,37 @@ export type QuerybidPlacedsArgs = {
 };
 
 
-export type QuerydvArgs = {
+export type QueryclusterCreatedArgs = {
   id: Scalars['ID']['input'];
   block?: InputMaybe<Block_height>;
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
 
-export type QuerydvsArgs = {
+export type QueryclusterCreatedsArgs = {
   skip?: InputMaybe<Scalars['Int']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<DV_orderBy>;
+  orderBy?: InputMaybe<ClusterCreated_orderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<DV_filter>;
+  where?: InputMaybe<ClusterCreated_filter>;
+  block?: InputMaybe<Block_height>;
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+
+export type QueryvaultCreatedArgs = {
+  id: Scalars['ID']['input'];
+  block?: InputMaybe<Block_height>;
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+
+export type QueryvaultCreatedsArgs = {
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<VaultCreated_orderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  where?: InputMaybe<VaultCreated_filter>;
   block?: InputMaybe<Block_height>;
   subgraphError?: _SubgraphErrorPolicy_;
 };
@@ -401,8 +526,10 @@ export type Subscription = {
   nodeOperators: Array<NodeOperator>;
   bidPlaced?: Maybe<BidPlaced>;
   bidPlaceds: Array<BidPlaced>;
-  dv?: Maybe<DV>;
-  dvs: Array<DV>;
+  clusterCreated?: Maybe<ClusterCreated>;
+  clusterCreateds: Array<ClusterCreated>;
+  vaultCreated?: Maybe<VaultCreated>;
+  vaultCreateds: Array<VaultCreated>;
   /** Access to subgraph metadata */
   _meta?: Maybe<_Meta_>;
 };
@@ -444,19 +571,37 @@ export type SubscriptionbidPlacedsArgs = {
 };
 
 
-export type SubscriptiondvArgs = {
+export type SubscriptionclusterCreatedArgs = {
   id: Scalars['ID']['input'];
   block?: InputMaybe<Block_height>;
   subgraphError?: _SubgraphErrorPolicy_;
 };
 
 
-export type SubscriptiondvsArgs = {
+export type SubscriptionclusterCreatedsArgs = {
   skip?: InputMaybe<Scalars['Int']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<DV_orderBy>;
+  orderBy?: InputMaybe<ClusterCreated_orderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<DV_filter>;
+  where?: InputMaybe<ClusterCreated_filter>;
+  block?: InputMaybe<Block_height>;
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+
+export type SubscriptionvaultCreatedArgs = {
+  id: Scalars['ID']['input'];
+  block?: InputMaybe<Block_height>;
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+
+export type SubscriptionvaultCreatedsArgs = {
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<VaultCreated_orderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  where?: InputMaybe<VaultCreated_filter>;
   block?: InputMaybe<Block_height>;
   subgraphError?: _SubgraphErrorPolicy_;
 };
@@ -465,6 +610,173 @@ export type SubscriptiondvsArgs = {
 export type Subscription_metaArgs = {
   block?: InputMaybe<Block_height>;
 };
+
+export type VaultCreated = {
+  id: Scalars['Bytes']['output'];
+  protocol: VaultProtocol;
+  type: VaultType;
+  operator: Scalars['String']['output'];
+  creator: Scalars['String']['output'];
+  oracle: Scalars['String']['output'];
+  whitelistedDeposit: Scalars['Boolean']['output'];
+  upgradeable: Scalars['Boolean']['output'];
+  timestamp: Scalars['BigInt']['output'];
+  txHash: Scalars['String']['output'];
+  clusters?: Maybe<Array<ClusterCreated>>;
+};
+
+
+export type VaultCreatedclustersArgs = {
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ClusterCreated_orderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  where?: InputMaybe<ClusterCreated_filter>;
+};
+
+export type VaultCreated_filter = {
+  id?: InputMaybe<Scalars['Bytes']['input']>;
+  id_not?: InputMaybe<Scalars['Bytes']['input']>;
+  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
+  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
+  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
+  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
+  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
+  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
+  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
+  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
+  protocol?: InputMaybe<VaultProtocol>;
+  protocol_not?: InputMaybe<VaultProtocol>;
+  protocol_in?: InputMaybe<Array<VaultProtocol>>;
+  protocol_not_in?: InputMaybe<Array<VaultProtocol>>;
+  type?: InputMaybe<VaultType>;
+  type_not?: InputMaybe<VaultType>;
+  type_in?: InputMaybe<Array<VaultType>>;
+  type_not_in?: InputMaybe<Array<VaultType>>;
+  operator?: InputMaybe<Scalars['String']['input']>;
+  operator_not?: InputMaybe<Scalars['String']['input']>;
+  operator_gt?: InputMaybe<Scalars['String']['input']>;
+  operator_lt?: InputMaybe<Scalars['String']['input']>;
+  operator_gte?: InputMaybe<Scalars['String']['input']>;
+  operator_lte?: InputMaybe<Scalars['String']['input']>;
+  operator_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  operator_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  operator_contains?: InputMaybe<Scalars['String']['input']>;
+  operator_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  operator_not_contains?: InputMaybe<Scalars['String']['input']>;
+  operator_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  operator_starts_with?: InputMaybe<Scalars['String']['input']>;
+  operator_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  operator_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  operator_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  operator_ends_with?: InputMaybe<Scalars['String']['input']>;
+  operator_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  operator_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  operator_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  creator?: InputMaybe<Scalars['String']['input']>;
+  creator_not?: InputMaybe<Scalars['String']['input']>;
+  creator_gt?: InputMaybe<Scalars['String']['input']>;
+  creator_lt?: InputMaybe<Scalars['String']['input']>;
+  creator_gte?: InputMaybe<Scalars['String']['input']>;
+  creator_lte?: InputMaybe<Scalars['String']['input']>;
+  creator_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  creator_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  creator_contains?: InputMaybe<Scalars['String']['input']>;
+  creator_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  creator_not_contains?: InputMaybe<Scalars['String']['input']>;
+  creator_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  creator_starts_with?: InputMaybe<Scalars['String']['input']>;
+  creator_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  creator_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  creator_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  creator_ends_with?: InputMaybe<Scalars['String']['input']>;
+  creator_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  creator_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  creator_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  oracle?: InputMaybe<Scalars['String']['input']>;
+  oracle_not?: InputMaybe<Scalars['String']['input']>;
+  oracle_gt?: InputMaybe<Scalars['String']['input']>;
+  oracle_lt?: InputMaybe<Scalars['String']['input']>;
+  oracle_gte?: InputMaybe<Scalars['String']['input']>;
+  oracle_lte?: InputMaybe<Scalars['String']['input']>;
+  oracle_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  oracle_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  oracle_contains?: InputMaybe<Scalars['String']['input']>;
+  oracle_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  oracle_not_contains?: InputMaybe<Scalars['String']['input']>;
+  oracle_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  oracle_starts_with?: InputMaybe<Scalars['String']['input']>;
+  oracle_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  oracle_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  oracle_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  oracle_ends_with?: InputMaybe<Scalars['String']['input']>;
+  oracle_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  oracle_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  oracle_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  whitelistedDeposit?: InputMaybe<Scalars['Boolean']['input']>;
+  whitelistedDeposit_not?: InputMaybe<Scalars['Boolean']['input']>;
+  whitelistedDeposit_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  whitelistedDeposit_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  upgradeable?: InputMaybe<Scalars['Boolean']['input']>;
+  upgradeable_not?: InputMaybe<Scalars['Boolean']['input']>;
+  upgradeable_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  upgradeable_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
+  timestamp?: InputMaybe<Scalars['BigInt']['input']>;
+  timestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
+  timestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  timestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  timestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  timestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  timestamp_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  timestamp_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+  txHash?: InputMaybe<Scalars['String']['input']>;
+  txHash_not?: InputMaybe<Scalars['String']['input']>;
+  txHash_gt?: InputMaybe<Scalars['String']['input']>;
+  txHash_lt?: InputMaybe<Scalars['String']['input']>;
+  txHash_gte?: InputMaybe<Scalars['String']['input']>;
+  txHash_lte?: InputMaybe<Scalars['String']['input']>;
+  txHash_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  txHash_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  txHash_contains?: InputMaybe<Scalars['String']['input']>;
+  txHash_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  txHash_not_contains?: InputMaybe<Scalars['String']['input']>;
+  txHash_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
+  txHash_starts_with?: InputMaybe<Scalars['String']['input']>;
+  txHash_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  txHash_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  txHash_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  txHash_ends_with?: InputMaybe<Scalars['String']['input']>;
+  txHash_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  txHash_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  txHash_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
+  clusters_?: InputMaybe<ClusterCreated_filter>;
+  /** Filter for the block changed event. */
+  _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<VaultCreated_filter>>>;
+  or?: InputMaybe<Array<InputMaybe<VaultCreated_filter>>>;
+};
+
+export type VaultCreated_orderBy =
+  | 'id'
+  | 'protocol'
+  | 'type'
+  | 'operator'
+  | 'creator'
+  | 'oracle'
+  | 'whitelistedDeposit'
+  | 'upgradeable'
+  | 'timestamp'
+  | 'txHash'
+  | 'clusters';
+
+export type VaultProtocol =
+  | 'EigenLayer'
+  | 'Symbiotic'
+  | 'Babylon';
+
+export type VaultType =
+  | 'Native'
+  | 'Liquid';
 
 export type _Block_ = {
   /** The hash of the block */
@@ -509,9 +821,13 @@ export type _SubgraphErrorPolicy_ =
   /** null **/
   bidPlaceds: InContextSdkMethod<Query['bidPlaceds'], QuerybidPlacedsArgs, MeshContext>,
   /** null **/
-  dv: InContextSdkMethod<Query['dv'], QuerydvArgs, MeshContext>,
+  clusterCreated: InContextSdkMethod<Query['clusterCreated'], QueryclusterCreatedArgs, MeshContext>,
   /** null **/
-  dvs: InContextSdkMethod<Query['dvs'], QuerydvsArgs, MeshContext>,
+  clusterCreateds: InContextSdkMethod<Query['clusterCreateds'], QueryclusterCreatedsArgs, MeshContext>,
+  /** null **/
+  vaultCreated: InContextSdkMethod<Query['vaultCreated'], QueryvaultCreatedArgs, MeshContext>,
+  /** null **/
+  vaultCreateds: InContextSdkMethod<Query['vaultCreateds'], QueryvaultCreatedsArgs, MeshContext>,
   /** Access to subgraph metadata **/
   _meta: InContextSdkMethod<Query['_meta'], Query_metaArgs, MeshContext>
   };
@@ -530,9 +846,13 @@ export type _SubgraphErrorPolicy_ =
   /** null **/
   bidPlaceds: InContextSdkMethod<Subscription['bidPlaceds'], SubscriptionbidPlacedsArgs, MeshContext>,
   /** null **/
-  dv: InContextSdkMethod<Subscription['dv'], SubscriptiondvArgs, MeshContext>,
+  clusterCreated: InContextSdkMethod<Subscription['clusterCreated'], SubscriptionclusterCreatedArgs, MeshContext>,
   /** null **/
-  dvs: InContextSdkMethod<Subscription['dvs'], SubscriptiondvsArgs, MeshContext>,
+  clusterCreateds: InContextSdkMethod<Subscription['clusterCreateds'], SubscriptionclusterCreatedsArgs, MeshContext>,
+  /** null **/
+  vaultCreated: InContextSdkMethod<Subscription['vaultCreated'], SubscriptionvaultCreatedArgs, MeshContext>,
+  /** null **/
+  vaultCreateds: InContextSdkMethod<Subscription['vaultCreateds'], SubscriptionvaultCreatedsArgs, MeshContext>,
   /** Access to subgraph metadata **/
   _meta: InContextSdkMethod<Subscription['_meta'], Subscription_metaArgs, MeshContext>
   };

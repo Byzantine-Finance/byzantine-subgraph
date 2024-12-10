@@ -1,0 +1,35 @@
+query GetVaults @live(interval: 12000) {
+  vaultCreateds(orderBy: timestamp, orderDirection: desc) {
+    id
+    protocol
+    type
+    operator
+    creator
+    oracle
+    whitelistedDeposit
+    upgradeable
+    timestamp
+    txHash
+    tvl
+    clusters {
+      id
+      averageAuctionScore
+      splitAddress
+      eigenPodAddr
+      timestamp
+      txHash
+      winners {
+        id
+        nodeOp {
+        nodeOpAddr
+      }
+      duration
+      discountRate
+      bidPrice
+      auctionScore
+      auctionType
+        bidStatus
+      }
+    }
+  }
+}
