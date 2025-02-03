@@ -1,3 +1,5 @@
+# Subgraph for auction 
+
 type NodeOperator @entity {
   id: Bytes! # nodeOpAddr as ID
   nodeOpAddr: String! # address
@@ -66,4 +68,26 @@ enum VaultProtocol {
 enum VaultType {
   Native
   Liquid
+}
+
+# Subgraph for Deposit contract
+
+type DepositContract @entity {
+  id: Bytes!
+  isPermissionlessDeposit: Boolean!
+  whitelistedDepositors: [WhitelistedDepositor!]
+  depositByToken: [DepositByToken!]
+}
+
+type DepositByToken @entity {
+  id: Bytes! # token address
+  allowDeposit: Boolean!
+  totalDeposit: BigInt!
+  availableDeposit: BigInt!
+  totalMovedToVault: BigInt!
+}
+
+type WhitelistedDepositor @entity {
+  id: Bytes! # depositor address
+  canDeposit: Boolean!
 }

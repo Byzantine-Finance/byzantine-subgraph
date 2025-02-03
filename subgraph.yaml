@@ -59,3 +59,41 @@ dataSources:
             address,address,address,bool,bool)
           handler: handleEigenLayerNativeVaultCreated
       file: ./src/strategy-vault-manager.ts
+  - kind: ethereum
+    name: ByzantineDeposit
+    network: holesky
+    source:
+      address: "0xF7517CB32Cd5e78a2E0AB6BcBD46b974aCe7f148"
+      abi: ByzantineDeposit
+      startBlock: 3236803
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Deposit
+        - DepositTokenAdded
+        - DepositorStatusChanged
+        - MoveToVault
+        - PermissionlessDepositSet
+        - Withdraw
+        - DepositTokenRemoved
+      abis:
+        - name: ByzantineDeposit
+          file: ./abis/ByzantineDeposit.json
+      eventHandlers:
+        - event: Deposit(indexed address,address,uint256)
+          handler: handleDeposit
+        - event: DepositTokenAdded(address)
+          handler: handleDepositTokenAdded
+        - event: DepositorStatusChanged(indexed address,bool)
+          handler: handleDepositorStatusChanged
+        - event: MoveToVault(indexed address,address,address,uint256,address)
+          handler: handleMoveToVault
+        - event: PermissionlessDepositSet(bool)
+          handler: handlePermissionlessDepositSet
+        - event: Withdraw(indexed address,address,uint256,address)
+          handler: handleWithdraw
+        - event: DepositTokenRemoved(address)
+          handler: handleDepositTokenRemoved
+      file: ./src/byzantine-deposit.ts
