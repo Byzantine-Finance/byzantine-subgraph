@@ -1,4 +1,4 @@
-# Subgraph for auction 
+# ========================== Subgraph for Auction ==========================
 
 type NodeOperator @entity {
   id: Bytes! # nodeOpAddr as ID
@@ -70,24 +70,42 @@ enum VaultType {
   Liquid
 }
 
-# Subgraph for Deposit contract
+# ========================== Subgraph for Deposit contract ==========================
 
 type DepositContract @entity {
   id: Bytes!
   isPermissionlessDeposit: Boolean!
-  whitelistedDepositors: [WhitelistedDepositor!]
-  depositByToken: [DepositByToken!]
+  depositors: [Depositor!]
+  tokens: [Token!]
 }
 
-type DepositByToken @entity {
+type Token @entity {
   id: Bytes! # token address
-  allowDeposit: Boolean!
+  allowedToken: Boolean!
   totalDeposit: BigInt!
   availableDeposit: BigInt!
   totalMovedToVault: BigInt!
+  depositors: [DepositorToken!] @derivedFrom(field: "token")
+  balanceOverTime: [BalanceOverTime!]
 }
 
-type WhitelistedDepositor @entity {
+type Depositor @entity {
   id: Bytes! # depositor address
   canDeposit: Boolean!
+  depositTokens: [DepositorToken!] @derivedFrom(field: "depositor")
+}
+
+type DepositorToken @entity {
+  id: Bytes! # set to `depositor.id.concat(token.id)`
+  depositor: Depositor!
+  token: Token!
+  totalBalance: BigInt!
+  balanceOverTime: [BalanceOverTime!]
+}
+
+# serves as a placeholder for balance over time
+type BalanceOverTime @entity {
+  id: Bytes! 
+  depositTime: BigInt!
+  balance: BigInt!
 }
